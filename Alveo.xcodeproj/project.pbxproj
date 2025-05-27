@@ -1,0 +1,558 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXContainerItemProxy section */
+		BA01A2592DE62BE5001A8BF2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BA01A2402DE62BE3001A8BF2 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BA01A2472DE62BE3001A8BF2;
+			remoteInfo = Alveo;
+		};
+		BA01A2632DE62BE5001A8BF2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BA01A2402DE62BE3001A8BF2 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BA01A2472DE62BE3001A8BF2;
+			remoteInfo = Alveo;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		BA01A2482DE62BE3001A8BF2 /* Alveo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Alveo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BA01A2582DE62BE5001A8BF2 /* AlveoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AlveoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		BA01A2622DE62BE5001A8BF2 /* AlveoUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AlveoUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		BA01A24A2DE62BE3001A8BF2 /* Alveo */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Alveo;
+			sourceTree = "<group>";
+		};
+		BA01A25B2DE62BE5001A8BF2 /* AlveoTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = AlveoTests;
+			sourceTree = "<group>";
+		};
+		BA01A2652DE62BE5001A8BF2 /* AlveoUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = AlveoUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		BA01A2452DE62BE3001A8BF2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BA01A2552DE62BE5001A8BF2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BA01A25F2DE62BE5001A8BF2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		BA01A23F2DE62BE3001A8BF2 = {
+			isa = PBXGroup;
+			children = (
+				BA01A24A2DE62BE3001A8BF2 /* Alveo */,
+				BA01A25B2DE62BE5001A8BF2 /* AlveoTests */,
+				BA01A2652DE62BE5001A8BF2 /* AlveoUITests */,
+				BA01A2492DE62BE3001A8BF2 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		BA01A2492DE62BE3001A8BF2 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				BA01A2482DE62BE3001A8BF2 /* Alveo.app */,
+				BA01A2582DE62BE5001A8BF2 /* AlveoTests.xctest */,
+				BA01A2622DE62BE5001A8BF2 /* AlveoUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		BA01A2472DE62BE3001A8BF2 /* Alveo */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BA01A26C2DE62BE5001A8BF2 /* Build configuration list for PBXNativeTarget "Alveo" */;
+			buildPhases = (
+				BA01A2442DE62BE3001A8BF2 /* Sources */,
+				BA01A2452DE62BE3001A8BF2 /* Frameworks */,
+				BA01A2462DE62BE3001A8BF2 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				BA01A24A2DE62BE3001A8BF2 /* Alveo */,
+			);
+			name = Alveo;
+			packageProductDependencies = (
+			);
+			productName = Alveo;
+			productReference = BA01A2482DE62BE3001A8BF2 /* Alveo.app */;
+			productType = "com.apple.product-type.application";
+		};
+		BA01A2572DE62BE5001A8BF2 /* AlveoTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BA01A26F2DE62BE5001A8BF2 /* Build configuration list for PBXNativeTarget "AlveoTests" */;
+			buildPhases = (
+				BA01A2542DE62BE5001A8BF2 /* Sources */,
+				BA01A2552DE62BE5001A8BF2 /* Frameworks */,
+				BA01A2562DE62BE5001A8BF2 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				BA01A25A2DE62BE5001A8BF2 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				BA01A25B2DE62BE5001A8BF2 /* AlveoTests */,
+			);
+			name = AlveoTests;
+			packageProductDependencies = (
+			);
+			productName = AlveoTests;
+			productReference = BA01A2582DE62BE5001A8BF2 /* AlveoTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		BA01A2612DE62BE5001A8BF2 /* AlveoUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BA01A2722DE62BE5001A8BF2 /* Build configuration list for PBXNativeTarget "AlveoUITests" */;
+			buildPhases = (
+				BA01A25E2DE62BE5001A8BF2 /* Sources */,
+				BA01A25F2DE62BE5001A8BF2 /* Frameworks */,
+				BA01A2602DE62BE5001A8BF2 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				BA01A2642DE62BE5001A8BF2 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				BA01A2652DE62BE5001A8BF2 /* AlveoUITests */,
+			);
+			name = AlveoUITests;
+			packageProductDependencies = (
+			);
+			productName = AlveoUITests;
+			productReference = BA01A2622DE62BE5001A8BF2 /* AlveoUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		BA01A2402DE62BE3001A8BF2 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1630;
+				LastUpgradeCheck = 1630;
+				TargetAttributes = {
+					BA01A2472DE62BE3001A8BF2 = {
+						CreatedOnToolsVersion = 16.3;
+					};
+					BA01A2572DE62BE5001A8BF2 = {
+						CreatedOnToolsVersion = 16.3;
+						TestTargetID = BA01A2472DE62BE3001A8BF2;
+					};
+					BA01A2612DE62BE5001A8BF2 = {
+						CreatedOnToolsVersion = 16.3;
+						TestTargetID = BA01A2472DE62BE3001A8BF2;
+					};
+				};
+			};
+			buildConfigurationList = BA01A2432DE62BE3001A8BF2 /* Build configuration list for PBXProject "Alveo" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = BA01A23F2DE62BE3001A8BF2;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = BA01A2492DE62BE3001A8BF2 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				BA01A2472DE62BE3001A8BF2 /* Alveo */,
+				BA01A2572DE62BE5001A8BF2 /* AlveoTests */,
+				BA01A2612DE62BE5001A8BF2 /* AlveoUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		BA01A2462DE62BE3001A8BF2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BA01A2562DE62BE5001A8BF2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BA01A2602DE62BE5001A8BF2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		BA01A2442DE62BE3001A8BF2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BA01A2542DE62BE5001A8BF2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BA01A25E2DE62BE5001A8BF2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		BA01A25A2DE62BE5001A8BF2 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BA01A2472DE62BE3001A8BF2 /* Alveo */;
+			targetProxy = BA01A2592DE62BE5001A8BF2 /* PBXContainerItemProxy */;
+		};
+		BA01A2642DE62BE5001A8BF2 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BA01A2472DE62BE3001A8BF2 /* Alveo */;
+			targetProxy = BA01A2632DE62BE5001A8BF2 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		BA01A26A2DE62BE5001A8BF2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = RTMWCLXVLL;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.4;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		BA01A26B2DE62BE5001A8BF2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = RTMWCLXVLL;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.4;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		BA01A26D2DE62BE5001A8BF2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Alveo/Alveo.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = RTMWCLXVLL;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tandreuperouges.Alveo;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		BA01A26E2DE62BE5001A8BF2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Alveo/Alveo.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = RTMWCLXVLL;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tandreuperouges.Alveo;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		BA01A2702DE62BE5001A8BF2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = RTMWCLXVLL;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tandreuperouges.AlveoTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Alveo.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Alveo";
+			};
+			name = Debug;
+		};
+		BA01A2712DE62BE5001A8BF2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = RTMWCLXVLL;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tandreuperouges.AlveoTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Alveo.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Alveo";
+			};
+			name = Release;
+		};
+		BA01A2732DE62BE5001A8BF2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = RTMWCLXVLL;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tandreuperouges.AlveoUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = Alveo;
+			};
+			name = Debug;
+		};
+		BA01A2742DE62BE5001A8BF2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = RTMWCLXVLL;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tandreuperouges.AlveoUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = Alveo;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		BA01A2432DE62BE3001A8BF2 /* Build configuration list for PBXProject "Alveo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BA01A26A2DE62BE5001A8BF2 /* Debug */,
+				BA01A26B2DE62BE5001A8BF2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BA01A26C2DE62BE5001A8BF2 /* Build configuration list for PBXNativeTarget "Alveo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BA01A26D2DE62BE5001A8BF2 /* Debug */,
+				BA01A26E2DE62BE5001A8BF2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BA01A26F2DE62BE5001A8BF2 /* Build configuration list for PBXNativeTarget "AlveoTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BA01A2702DE62BE5001A8BF2 /* Debug */,
+				BA01A2712DE62BE5001A8BF2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BA01A2722DE62BE5001A8BF2 /* Build configuration list for PBXNativeTarget "AlveoUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BA01A2732DE62BE5001A8BF2 /* Debug */,
+				BA01A2742DE62BE5001A8BF2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = BA01A2402DE62BE3001A8BF2 /* Project object */;
+}
