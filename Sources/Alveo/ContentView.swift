@@ -19,6 +19,7 @@ struct ContentView: View {
     @State private var showAddAlveoPaneDialog = false
     @State private var newAlveoPaneName: String = ""
     @State private var initialAlveoPaneURLString: String = "https://www.google.com"
+    @State private var tabHistory: [UUID] = [] // Historique des onglets actifs (le plus récent en premier)
 
     // MARK: - Computed Properties
     var currentActiveAlveoPaneObject: AlveoPane? {
@@ -55,24 +56,44 @@ struct ContentView: View {
             let tabIDToClose = tabToClose.id
             guard let indexToRemove = activePane.tabs.firstIndex(where: { $0.id == tabIDToClose }) else { return }
             
+            // Supprimer l'onglet fermé de l'historique
+            tabHistory.removeAll { $0 == tabIDToClose }
+            
             modelContext.delete(tabToClose)
 
             if activePane.tabs.isEmpty {
                 activePane.currentTabID = nil
                 print("[ContentView ACTION] Dernier onglet fermé. Espace vide.")
             } else {
-                var newIndexToSelect = indexToRemove
-                if newIndexToSelect >= activePane.tabs.count {
-                    newIndexToSelect = activePane.tabs.count - 1
+                // Logique améliorée pour sélectionner le prochain onglet
+                var nextTabID: UUID?
+                
+                // 1. Essayer de sélectionner l'onglet précédemment actif depuis l'historique
+                for historyTabID in tabHistory {
+                    if activePane.tabs.contains(where: { $0.id == historyTabID }) {
+                        nextTabID = historyTabID
+                        print("[ContentView ACTION] Sélection de l'onglet précédemment actif: \(historyTabID)")
+                        break
+                    }
                 }
                 
-                if newIndexToSelect >= 0 && newIndexToSelect < activePane.tabs.count {
-                    activePane.currentTabID = activePane.tabs[newIndexToSelect].id
-                } else if !activePane.tabs.isEmpty {
-                    activePane.currentTabID = activePane.tabs.first!.id
-                } else {
-                    activePane.currentTabID = nil
+                // 2. Si aucun onglet de l'historique n'est disponible, utiliser la logique positionnelle
+                if nextTabID == nil {
+                    var newIndexToSelect = indexToRemove
+                    if newIndexToSelect >= activePane.tabs.count {
+                        newIndexToSelect = activePane.tabs.count - 1
+                    }
+                    
+                    if newIndexToSelect >= 0 && newIndexToSelect < activePane.tabs.count {
+                        nextTabID = activePane.tabs[newIndexToSelect].id
+                        print("[ContentView ACTION] Sélection par position: index \(newIndexToSelect)")
+                    } else if !activePane.tabs.isEmpty {
+                        nextTabID = activePane.tabs.first!.id
+                        print("[ContentView ACTION] Sélection du premier onglet disponible")
+                    }
                 }
+                
+                activePane.currentTabID = nextTabID
             }
         } else {
             print("[ContentView ACTION] Aucun onglet actif. Fermeture de la fenêtre.")
@@ -472,11 +493,26 @@ struct ContentView: View {
                 }
                 .onChange(of: currentActiveAlveoPaneObject?.currentTabID) { oldValue, newValue in
                     print(">>> [CV .onChange(currentTabID)] \(String(describing: oldValue)) -> \(String(describing: newValue))")
+                    
+                    // Mettre à jour l'historique des onglets
+                    if let newTabID = newValue {
+                        // Supprimer l'onglet de l'historique s'il y était déjà
+                        tabHistory.removeAll { $0 == newTabID }
+                        // L'ajouter en première position (plus récent)
+                        tabHistory.insert(newTabID, at: 0)
+                        // Limiter la taille de l'historique (garder les 10 derniers par exemple)
+                        if tabHistory.count > 10 {
+                            tabHistory = Array(tabHistory.prefix(10))
+                        }
+                        print("[ContentView] Historique onglets mis à jour. Taille: \(tabHistory.count)")
+                    }
+                    
                     if let paneID = currentActiveAlveoPaneObject?.id {
                         saveCurrentTabState(forPaneID: paneID, forTabID: oldValue)
                         updateToolbarURLInputAndLoadIfNeeded(forPaneID: paneID, forceLoad: true)
                     }
                 }
+                
                 .sheet(isPresented: $showAddAlveoPaneDialog) {
                     addAlveoPaneDialog()
                 }
