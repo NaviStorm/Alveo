@@ -42,17 +42,47 @@ struct ContentView: View {
             return existingHelper
         }
         let newHelper = WebViewHelper(customUserAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.4 Safari/605.1.15")
-        // Assignation du callback pour synchroniser Tab.urlString (NOUVEAU)
-        newHelper.onNavigationEvent = { [weak self] newURL, newTitle in
-            self?.handleNavigationEvent(forPaneID: paneID, newURL: newURL, newTitle: newTitle)
+        
+        // Assignation du callback pour synchroniser Tab.urlString
+        // Supprimer [weak self] car ContentView est une struct.
+        // La capture de `self` par une struct dans une closure non-échappante
+        // ou une closure échappante stockée par un @StateObject/@ObservedObject est généralement sûre
+        // car la durée de vie de la closure est liée à celle de la vue ou de l'objet observé.
+        // Cependant, WebViewHelper est un @ObservedObject et peut survivre à des instances spécifiques de la vue ContentView.
+        // Mais ici, la closure est appelée par le WebViewHelper, et nous avons besoin d'accéder aux
+        // propriétés @State et @Query de ContentView.
+        // Si `self` est capturé, il s'agit d'une copie de la struct ContentView au moment de la création de la closure.
+        // Pour que `handleNavigationEvent` ait accès aux versions actuelles des propriétés d'état,
+        // nous devons nous assurer que la closure capture la bonne "version" de ContentView,
+        // ou, plus simplement, passer les identifiants nécessaires et laisser `handleNavigationEvent`
+        // accéder directement aux @State/@Query.
+        
+        // La capture directe de `self` pour une struct dans une closure stockée par un objet
+        // (comme WebViewHelper) peut être problématique si la struct elle-même est recréée
+        // (ce qui est fréquent pour les vues SwiftUI). La closure capturerait une ancienne copie.
+        
+        // SOLUTION : Passer l'ID de l'Espace et laisser `handleNavigationEvent` utiliser
+        // les propriétés d'état actuelles de ContentView. Le `self` dans la closure
+        // doit être compris comme une capture des valeurs nécessaires au moment de l'appel.
+        
+        newHelper.onNavigationEvent = { newURL, newTitle in
+            // `self` ici, dans la closure exécutée, fera référence à l'instance actuelle de ContentView
+            // lorsque la closure est appelée, car les closures capturent leur environnement.
+            // Pour les structs, cela signifie une copie des valeurs ou des références aux objets d'état/observés.
+            // Les accès à @State, @Query, @EnvironmentObject à l'intérieur de `handleNavigationEvent`
+            // fonctionneront correctement car ils sont gérés par SwiftUI.
+            self.handleNavigationEvent(forPaneID: paneID, newURL: newURL, newTitle: newTitle)
         }
+        
         webViewHelpers[paneID] = newHelper
         print("[ContentView GET_HELPER] Création NOUVEAU helper: \(Unmanaged.passUnretained(newHelper).toOpaque()) pour Espace ID: \(paneID)")
         return newHelper
     }
     
+    
     private func handleNavigationEvent(forPaneID paneID: UUID, newURL: URL?, newTitle: String?) {
-        guard let activePane = alveoPanes.first(where: { $0.id == paneID }), // Trouver le bon pane
+        // Accède à alveoPanes (@Query) et toolbarURLInput (@State) qui sont gérés par SwiftUI
+        guard let activePane = alveoPanes.first(where: { $0.id == paneID }),
               let activeTabID = activePane.currentTabID,
               let activeTab = activePane.tabs.first(where: { $0.id == activeTabID }) else {
             print("[Callback NavEvent] Pane ou Tab non trouvé pour paneID: \(paneID)")
@@ -67,7 +97,7 @@ struct ContentView: View {
                 updated = true
             }
         }
-        if let title = newTitle, !title.isEmpty { // Ne pas mettre à jour avec un titre vide
+        if let title = newTitle, !title.isEmpty {
             if activeTab.title != title {
                 activeTab.title = title
                 print("[Callback NavEvent] Espace \(activePane.name ?? "") Onglet \(activeTab.displayTitle) Titre mis à jour: \(title)")
@@ -75,7 +105,6 @@ struct ContentView: View {
             }
         }
         
-        // Si l'URL de la barre d'outils doit refléter l'URL de l'onglet après navigation
         if updated && activePane.id == self.activeAlveoPaneID && activeTab.id == self.currentActiveAlveoPaneObject?.currentTabID {
             if let currentTabURL = newURL?.absoluteString, toolbarURLInput != currentTabURL {
                  toolbarURLInput = currentTabURL
