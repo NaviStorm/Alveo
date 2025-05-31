@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:Alveo}",
+            "name": "Debug Alveo",
+            "program": "${workspaceFolder:Alveo}/.build/debug/Alveo",
+            "preLaunchTask": "swift: Build Debug Alveo"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:Alveo}",
+            "name": "Release Alveo",
+            "program": "${workspaceFolder:Alveo}/.build/release/Alveo",
+            "preLaunchTask": "swift: Build Release Alveo"
+        }
+    ]
+}

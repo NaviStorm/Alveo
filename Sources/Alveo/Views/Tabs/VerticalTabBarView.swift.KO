@@ -1,0 +1,107 @@
+import SwiftUI
+import SwiftData
+
+// @MainActor // Assurez-vous que cette vue est aussi @MainActor si elle manipule des ObservableObject
+struct VerticalTabBarView: View {
+    @Bindable var pane: AlveoPane
+    @Environment(\.modelContext) private var modelContext
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            List(selection: $pane.currentTabID) { // La sélection est liée à pane.currentTabID
+                ForEach(pane.sortedTabs) { tab in // pane.sortedTabs devrait se mettre à jour
+                    HStack {
+                        Image(systemName: tab.displayURL?.host?.first == "g" ? "magnifyingglass.circle.fill" : "globe")
+                            .foregroundColor(.secondary)
+                            .frame(width: 16, height: 16)
+
+                        Text(tab.displayTitle)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+
+                        Spacer()
+
+                        Button {
+                            // --- LOGIQUE DE SUPPRESSION AMÉLIORÉE ---
+                            let tabToDelete = tab // Capture de la référence avant la suppression
+                            let wasSelected = (tabToDelete.id == pane.currentTabID)
+                            
+                            // 1. Supprimer l'onglet du contexte
+                            modelContext.delete(tabToDelete)
+                            
+                            // Optionnel mais recommandé : essayer de sauvegarder pour forcer la mise à jour
+                            // try? modelContext.save() // Peut aider mais attention aux performances si fait trop souvent
+
+                            // 2. Mettre à jour la sélection si l'onglet supprimé était sélectionné
+                            if wasSelected {
+                                // Trouver un nouvel onglet à sélectionner (par exemple, le précédent ou le suivant, ou le premier)
+                                // Si pane.sortedTabs se met à jour correctement APRÈS modelContext.delete,
+                                // cette liste devrait déjà être la version "après suppression".
+                                // Cependant, pane.sortedTabs est une propriété calculée.
+                                // Il est plus sûr de travailler avec la liste actuelle des onglets du panneau
+                                // APRÈS la suppression effective.
+                                
+                                // La propriété pane.tabs est la source de vérité de la relation SwiftData.
+                                // Après modelContext.delete, cette relation est mise à jour.
+                                // pane.sortedTabs est juste une vue triée de pane.tabs.
+
+                                if let remainingTabs = pane.tabs?.filter({ $0.id != tabToDelete.id }).sorted(by: { $0.order < $1.order }), !remainingTabs.isEmpty {
+                                    // Essayer de sélectionner un onglet adjacent ou le premier
+                                    // Cette logique peut être affinée pour sélectionner l'onglet le plus proche.
+                                    pane.currentTabID = remainingTabs.first?.id
+                                } else {
+                                    // Plus aucun onglet
+                                    pane.currentTabID = nil
+                                }
+                            }
+                            // La List devrait se redessiner car pane.sortedTabs change (car pane.tabs a changé)
+                            // et pane.currentTabID a peut-être changé.
+                        } label: {
+                            Image(systemName: "xmark")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        .buttonStyle(.borderless)
+                        .opacity(0.8)
+                    }
+                    .padding(.vertical, 6)
+                    .padding(.horizontal, 8)
+                    .background(pane.currentTabID == tab.id ? Color.accentColor.opacity(0.15) : Color.clear)
+                    .cornerRadius(5)
+                    .tag(tab.id) // Important pour List selection
+                    .draggable(tab)
+                }
+                // Si vous utilisiez le .onDelete de List, la logique serait différente
+                // .onDelete(perform: deleteTabs)
+            }
+            .listStyle(.sidebar)
+        }
+        .frame(minWidth: 180, idealWidth: 220, maxWidth: 400)
+        .background(Color(nsColor: .windowBackgroundColor).opacity(0.7))
+    }
+
+    // Si vous utilisiez .onDelete(perform: deleteTabs) sur le ForEach :
+    /*
+    private func deleteTabs(at offsets: IndexSet) {
+        // Convertir IndexSet en onglets réels à supprimer
+        let tabsToDelete = offsets.map { pane.sortedTabs[$0] }
+        
+        for tabToDelete in tabsToDelete {
+            let wasSelected = (tabToDelete.id == pane.currentTabID)
+            modelContext.delete(tabToDelete)
+            
+            if wasSelected {
+                // Logique similaire pour mettre à jour currentTabID
+                // Cette partie est délicate car pane.sortedTabs change pendant que vous itérez potentiellement
+                // sur les offsets. Il est plus sûr de collecter les ID à supprimer d'abord.
+            }
+        }
+        
+        // Mettre à jour currentTabID après toutes les suppressions
+        if let currentSelection = pane.currentTabID, !(pane.tabs?.contains(where: { $0.id == currentSelection }) ?? false) {
+            // L'onglet sélectionné a été supprimé
+            pane.currentTabID = pane.tabs?.sorted(by: { $0.order < $1.order }).first?.id ?? nil
+        }
+    }
+    */
+}
