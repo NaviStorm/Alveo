@@ -35,7 +35,15 @@ struct SidebarView: View {
                             tab: tab,
                             isSelected: tab.id == pane.currentTabID,
                             onSelect: {
-                                pane.currentTabID = tab.id
+                                print(">>> [SidebarTabRow onSelect] AVANT: pane.currentTabID=\(String(describing: pane.currentTabID)), tab.id=\(tab.id)")
+                                if pane.currentTabID != tab.id {
+                                    pane.currentTabID = tab.id // Ceci est la modification clé
+                                    print(">>> [SidebarTabRow onSelect] APRES: pane.currentTabID mis à jour vers \(String(describing: pane.currentTabID))")
+                                } else {
+                                    print(">>> [SidebarTabRow onSelect] Cliqué sur l'onglet déjà sélectionné.")
+                                    // Forcer un rechargement si l'onglet est déjà sélectionné mais que la page n'est pas là ?
+                                    // Cela pourrait être géré par ContentView si updateToolbar... est appelée.
+                                }
                                 tab.lastAccessed = Date()
                             },
                             onClose: {

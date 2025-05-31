@@ -142,6 +142,7 @@ struct ContentView: View {
     }
     
     private func updateToolbarURLInputAndLoadIfNeeded(forceLoad: Bool = false) {
+        print(">>> [UpdateToolbar ENTER] forceLoad: \(forceLoad), Espace: \(currentActiveAlveoPaneObject?.name ?? "N/A"), OngletID: \(String(describing: currentActiveAlveoPaneObject?.currentTabID))")
         guard let pane = currentActiveAlveoPaneObject else {
             toolbarURLInput = "" // Pas d'Espace actif, vider la barre d'URL
             print("[UpdateToolbar] Aucun Espace actif.")
@@ -363,9 +364,13 @@ struct ContentView: View {
                     // La sauvegarde de l'état de l'ancien onglet/espace a dû être faite *avant* ce changement.
                     updateToolbarURLInputAndLoadIfNeeded(forceLoad: true)
                 }
-                .onChange(of: currentActiveAlveoPaneObject?.currentTabID) { // Gère le changement d'onglet DANS l'Espace actif
-                     print("[ContentView] currentTabID de l'Espace \(currentActiveAlveoPaneObject?.name ?? "N/A") changé en: \(String(describing: currentActiveAlveoPaneObject?.currentTabID))")
-                    updateToolbarURLInputAndLoadIfNeeded(forceLoad: true)
+                .onChange(of: currentActiveAlveoPaneObject?.currentTabID) { oldValue, newValue in
+                     print(">>> [ContentView .onChange(currentTabID)] Changement détecté! Ancien: \(String(describing: oldValue)), Nouveau: \(String(describing: newValue)) pour Espace: \(currentActiveAlveoPaneObject?.name ?? "N/A")")
+                    // Sauvegarder l'état de l'ancien onglet si l'ancien ID est connu et différent du nouveau
+                    // Cela nécessite de connaître l'ancien onglet de l'ancien espace, ce qui est complexe ici.
+                    // La sauvegarde est mieux gérée avant de changer d'espace ou d'onglet activement.
+                    // Pour l'instant, concentrons-nous sur le chargement.
+                    updateToolbarURLInputAndLoadIfNeeded(forceLoad: true) // Forcer le chargement
                 }
                 .sheet(isPresented: $showAddAlveoPaneDialog) { addAlveoPaneDialog() }
             }
