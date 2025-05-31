@@ -1,42 +1,53 @@
-import SwiftUI // Si vous utilisez des types SwiftUI, sinon pas nécessaire ici
+import SwiftUI
 import SwiftData
 
 @Model
 final class Tab {
-    var id: UUID
+    var id: UUID = UUID()
     var urlString: String
     var title: String?
-    var lastAccessed: Date
+    var lastAccessed: Date? // CHANGÉ: Date -> Date?
     var creationDate: Date
     
-    var pane: AlveoPane? // Relation inverse avec AlveoPane (supposée correcte)
-
-    // *** DÉFINITION CORRECTE DE LA RELATION INVERSE ***
-    // Cette relation dit : "Mes 'historyItems' sont l'inverse de la propriété 'tab' dans HistoryItem."
-    // La deleteRule ici (.cascade) signifie que si ce Tab est supprimé, tous ses HistoryItems seront aussi supprimés.
-    @Relationship(deleteRule: .cascade, inverse: \HistoryItem.tab)
-    var historyItems: [HistoryItem] = [] // Doit être une collection, initialisée vide.
+    var pane: AlveoPane?
+    
+    // Emoji personnalisé pour remplacer la favicon
+    var customEmojiIcon: String? = nil
 
     init(id: UUID = UUID(),
          urlString: String = "about:blank",
          title: String? = nil,
-         lastAccessed: Date = Date(),
+         lastAccessed: Date? = Date(), // CHANGÉ: Date -> Date?
          creationDate: Date = Date()) {
-        
         self.id = id
         self.urlString = urlString
         self.title = title ?? (urlString.isEmpty || urlString == "about:blank" ? nil : urlString)
         self.lastAccessed = lastAccessed
         self.creationDate = creationDate
-        // historyItems est initialisée à [] et sera gérée par SwiftData.
     }
 
-    // Propriétés calculées et méthodes (displayTitle, displayURL, getSortedHistory)
-    // ... (votre code existant pour ces méthodes, qui semble correct) ...
+    // Propriété calculée pour la favicon
+    var faviconURL: URL? {
+        guard customEmojiIcon == nil,
+              let url = URL(string: urlString),
+              let host = url.host,
+              !host.isEmpty,
+              urlString != "about:blank" else { return nil }
+        
+        var components = URLComponents()
+        components.scheme = url.scheme
+        components.host = url.host
+        components.path = "/favicon.ico"
+        return components.url
+    }
+
     var displayTitle: String {
         if let title = title, !title.isEmpty {
             return title
-        } else if let url = URL(string: urlString), let host = url.host, !host.isEmpty, urlString != "about:blank" {
+        } else if let url = URL(string: urlString),
+                  let host = url.host,
+                  !host.isEmpty,
+                  urlString != "about:blank" {
             return host.starts(with: "www.") ? String(host.dropFirst(4)) : host
         } else if urlString == "about:blank" || urlString.isEmpty {
             return "Nouvel onglet"
@@ -55,6 +66,7 @@ final class Tab {
             historyItem.tab?.id == currentTabInstanceID
         }
         let fetchDescriptor = FetchDescriptor(predicate: predicate)
+        
         do {
             let items = try context.fetch(fetchDescriptor)
             return items.sorted { (item1, item2) -> Bool in

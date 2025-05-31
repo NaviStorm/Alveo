@@ -10,6 +10,9 @@
 		BA19F6782DEAF9860074C881 /* TabButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA19F6772DEAF9810074C881 /* TabButton.swift */; };
 		BA19F6792DEAF9860074C881 /* TabButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA19F6772DEAF9810074C881 /* TabButton.swift */; };
 		BA19F67A2DEAF9860074C881 /* TabButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA19F6772DEAF9810074C881 /* TabButton.swift */; };
+		BA19F67C2DEB702E0074C881 /* SidebarTabRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA19F67B2DEB70290074C881 /* SidebarTabRow.swift */; };
+		BA19F67D2DEB702E0074C881 /* SidebarTabRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA19F67B2DEB70290074C881 /* SidebarTabRow.swift */; };
+		BA19F67E2DEB702E0074C881 /* SidebarTabRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA19F67B2DEB70290074C881 /* SidebarTabRow.swift */; };
 		BA43B2D32DE75902001CB722 /* PrincipalToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA43B2D22DE75902001CB722 /* PrincipalToolbarView.swift */; };
 		BA43B2D42DE75902001CB722 /* PrincipalToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA43B2D22DE75902001CB722 /* PrincipalToolbarView.swift */; };
 		BA43B2D52DE75902001CB722 /* PrincipalToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA43B2D22DE75902001CB722 /* PrincipalToolbarView.swift */; };
@@ -88,6 +91,7 @@
 		BA01A2582DE62BE5001A8BF2 /* AlveoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AlveoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BA01A2622DE62BE5001A8BF2 /* AlveoUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AlveoUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BA19F6772DEAF9810074C881 /* TabButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabButton.swift; sourceTree = "<group>"; };
+		BA19F67B2DEB70290074C881 /* SidebarTabRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarTabRow.swift; sourceTree = "<group>"; };
 		BA43B2D22DE75902001CB722 /* PrincipalToolbarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrincipalToolbarView.swift; sourceTree = "<group>"; };
 		BA44C9622DE6EAF60028BC1C /* TabBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarView.swift; sourceTree = "<group>"; };
 		BA44C9662DE6F0D60028BC1C /* WebViewHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewHelper.swift; sourceTree = "<group>"; };
@@ -197,6 +201,7 @@
 		BA4F229A2DEAD2D500191932 /* Sidebar */ = {
 			isa = PBXGroup;
 			children = (
+				BA19F67B2DEB70290074C881 /* SidebarTabRow.swift */,
 				BA4F22992DEAD2D500191932 /* SidebarView.swift */,
 			);
 			path = Sidebar;
@@ -438,6 +443,7 @@
 				BAD0CF222DE76E4800B78C06 /* SuggestionsList.swift in Sources */,
 				BA44C9702DE70B560028BC1C /* ActiveAlveoPaneContainerView.swift in Sources */,
 				BAAE9A0E2DE66E9C002B1014 /* AppStorageKeys.swift in Sources */,
+				BA19F67E2DEB702E0074C881 /* SidebarTabRow.swift in Sources */,
 				BA44C9672DE6F0D60028BC1C /* WebViewHelper.swift in Sources */,
 				BA19F6782DEAF9860074C881 /* TabButton.swift in Sources */,
 				BA44C96B2DE6F6CD0028BC1C /* HistoryItem.swift in Sources */,
@@ -464,6 +470,7 @@
 				BA44C96C2DE6F6CD0028BC1C /* HistoryItem.swift in Sources */,
 				BAAE99FF2DE66E9C002B1014 /* AppStorageKeys.swift in Sources */,
 				BAAE9A002DE66E9C002B1014 /* Tab.swift in Sources */,
+				BA19F67D2DEB702E0074C881 /* SidebarTabRow.swift in Sources */,
 				BAAE9A012DE66E9C002B1014 /* WebViewRepresentable.swift in Sources */,
 				BA4F22A12DEAD39C00191932 /* NSColor+Extensions.swift in Sources */,
 				BA19F6792DEAF9860074C881 /* TabButton.swift in Sources */,
@@ -492,6 +499,7 @@
 				BAAE99F12DE66E9C002B1014 /* AppStorageKeys.swift in Sources */,
 				BAAE99F22DE66E9C002B1014 /* Tab.swift in Sources */,
 				BAD0CF212DE76E4800B78C06 /* SuggestionsList.swift in Sources */,
+				BA19F67C2DEB702E0074C881 /* SidebarTabRow.swift in Sources */,
 				BA44C9712DE70B560028BC1C /* ActiveAlveoPaneContainerView.swift in Sources */,
 				BAAE99F32DE66E9C002B1014 /* WebViewRepresentable.swift in Sources */,
 				BAAE99F42DE66E9C002B1014 /* AlveoPaneView.swift in Sources */,
