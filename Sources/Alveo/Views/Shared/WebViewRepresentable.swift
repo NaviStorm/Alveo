@@ -7,6 +7,7 @@ struct WebViewRepresentable: NSViewRepresentable {
     var onURLChanged: ((URL?) -> Void)? = nil
 
     func makeNSView(context: Context) -> WKWebView {
+        print(">>> [WebViewRepresentable makeNSView] Retourne WKWebView: \(Unmanaged.passUnretained(webView).toOpaque())")
         webView.navigationDelegate = context.coordinator
         return webView
     }

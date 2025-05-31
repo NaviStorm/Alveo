@@ -37,12 +37,19 @@ struct PrincipalToolbarView: View {
                         }
                     }
                     .onSubmit {
-                        print("[PToolbarV onSubmit] URL saisie: \(urlInput)")
+                        print(">>> [PrincipalToolbarView onSubmit] URL saisie: '\(urlInput)' sur helper: \(Unmanaged.passUnretained(webViewHelper).toOpaque())")
+                        guard !urlInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                            print(">>> [PrincipalToolbarView onSubmit] URL vide, ignorée.")
+                            isFocused = false // Perdre le focus même si l'URL est vide
+                            return
+                        }
                         webViewHelper.loadURLString(urlInput)
+                        // La mise à jour de tab.urlString sera gérée par le callback onNavigationEvent
                         showSuggestions = false
                         isFocused = false
-                        print("[PToolbarV onSubmit] Chargement demandé pour: \(urlInput)")
+                        print(">>> [PrincipalToolbarView onSubmit] Chargement demandé pour: '\(urlInput)'")
                     }
+                
                     .onChange(of: urlInput) { oldValue, newValue in
                         print("[PToolbarV urlInput changed] old: '\(oldValue)', new: '\(newValue)', currentFocus: \(isFocused)")
                         if newValue.isEmpty {

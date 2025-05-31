@@ -38,12 +38,50 @@ struct ContentView: View {
     // Crée ou récupère le WebViewHelper pour un Espace donné
     private func getWebViewHelper(for paneID: UUID) -> WebViewHelper {
         if let existingHelper = webViewHelpers[paneID] {
+            print("[ContentView GET_HELPER] Retour helper EXISTANT: \(Unmanaged.passUnretained(existingHelper).toOpaque()) pour Espace ID: \(paneID)")
             return existingHelper
         }
         let newHelper = WebViewHelper(customUserAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.4 Safari/605.1.15")
+        // Assignation du callback pour synchroniser Tab.urlString (NOUVEAU)
+        newHelper.onNavigationEvent = { [weak self] newURL, newTitle in
+            self?.handleNavigationEvent(forPaneID: paneID, newURL: newURL, newTitle: newTitle)
+        }
         webViewHelpers[paneID] = newHelper
-        print("[ContentView] Nouveau WebViewHelper \(Unmanaged.passUnretained(newHelper).toOpaque()) créé pour l'Espace ID: \(paneID)")
+        print("[ContentView GET_HELPER] Création NOUVEAU helper: \(Unmanaged.passUnretained(newHelper).toOpaque()) pour Espace ID: \(paneID)")
         return newHelper
+    }
+    
+    private func handleNavigationEvent(forPaneID paneID: UUID, newURL: URL?, newTitle: String?) {
+        guard let activePane = alveoPanes.first(where: { $0.id == paneID }), // Trouver le bon pane
+              let activeTabID = activePane.currentTabID,
+              let activeTab = activePane.tabs.first(where: { $0.id == activeTabID }) else {
+            print("[Callback NavEvent] Pane ou Tab non trouvé pour paneID: \(paneID)")
+            return
+        }
+
+        var updated = false
+        if let urlAbsoluteString = newURL?.absoluteString {
+            if activeTab.urlString != urlAbsoluteString {
+                activeTab.urlString = urlAbsoluteString
+                print("[Callback NavEvent] Espace \(activePane.name ?? "") Onglet \(activeTab.displayTitle) URL mis à jour: \(urlAbsoluteString)")
+                updated = true
+            }
+        }
+        if let title = newTitle, !title.isEmpty { // Ne pas mettre à jour avec un titre vide
+            if activeTab.title != title {
+                activeTab.title = title
+                print("[Callback NavEvent] Espace \(activePane.name ?? "") Onglet \(activeTab.displayTitle) Titre mis à jour: \(title)")
+                updated = true
+            }
+        }
+        
+        // Si l'URL de la barre d'outils doit refléter l'URL de l'onglet après navigation
+        if updated && activePane.id == self.activeAlveoPaneID && activeTab.id == self.currentActiveAlveoPaneObject?.currentTabID {
+            if let currentTabURL = newURL?.absoluteString, toolbarURLInput != currentTabURL {
+                 toolbarURLInput = currentTabURL
+                 print("[Callback NavEvent] toolbarURLInput mis à jour vers: \(toolbarURLInput)")
+            }
+        }
     }
     
     private func saveCurrentTabState() {
