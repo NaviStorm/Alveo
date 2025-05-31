@@ -10,7 +10,7 @@ struct ContentView: View {
     // MARK: - State Variables
     @State private var activeAlveoPaneID: UUID?
     
-    // Dictionnaire de WebViewHelpers par espace (SEULE SOURCE DE VÉRITÉ)
+    // Dictionnaire pour stocker un WebViewHelper par AlveoPane (Espace)
     @State private var webViewHelpers: [UUID: WebViewHelper] = [:]
     
     @State private var toolbarURLInput: String = ""
@@ -20,8 +20,6 @@ struct ContentView: View {
     @State private var showAddAlveoPaneDialog = false
     @State private var newAlveoPaneName: String = ""
     @State private var initialAlveoPaneURLString: String = "https://www.google.com"
-    // Note: @State var showSuggestions: Bool = false; est redondant avec showToolbarSuggestions.
-    // Conserver showToolbarSuggestions si elle est utilisée par PrincipalToolbarView
     
     // MARK: - Computed Properties
     var currentActiveAlveoPaneObject: AlveoPane? {
@@ -29,19 +27,22 @@ struct ContentView: View {
         return alveoPanes.first(where: { $0.id == activeID })
     }
     
+    // Récupère le WebViewHelper pour l'Espace actif
     private var currentWebViewHelper: WebViewHelper? {
         guard let activePane = currentActiveAlveoPaneObject else { return nil }
         return getWebViewHelper(for: activePane.id)
     }
     
     // MARK: - Private Methods
+    
+    // Crée ou récupère le WebViewHelper pour un Espace donné
     private func getWebViewHelper(for paneID: UUID) -> WebViewHelper {
-        if let existing = webViewHelpers[paneID] {
-            return existing
+        if let existingHelper = webViewHelpers[paneID] {
+            return existingHelper
         }
         let newHelper = WebViewHelper(customUserAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.4 Safari/605.1.15")
         webViewHelpers[paneID] = newHelper
-        print("[ContentView] Nouveau WebViewHelper \(Unmanaged.passUnretained(newHelper).toOpaque()) créé pour l'espace: \(paneID)")
+        print("[ContentView] Nouveau WebViewHelper \(Unmanaged.passUnretained(newHelper).toOpaque()) créé pour l'Espace ID: \(paneID)")
         return newHelper
     }
     
@@ -49,7 +50,7 @@ struct ContentView: View {
         guard let currentPane = currentActiveAlveoPaneObject,
               let currentTabID = currentPane.currentTabID,
               let currentTab = currentPane.tabs.first(where: { $0.id == currentTabID }),
-              let paneWebViewHelper = currentWebViewHelper else { return }
+              let paneWebViewHelper = currentWebViewHelper else { return } // Utilise currentWebViewHelper
         
         if let currentURL = paneWebViewHelper.currentURL {
             currentTab.urlString = currentURL.absoluteString
@@ -58,16 +59,17 @@ struct ContentView: View {
             currentTab.title = currentTitle
         }
         currentTab.lastAccessed = Date()
-        print("[ContentView] État sauvegardé pour l'onglet: \(currentTab.displayTitle) dans l'espace \(currentPane.name ?? "")")
+        print("[ContentView] État sauvegardé pour onglet: \(currentTab.displayTitle) dans Espace: \(currentPane.name ?? "N/A")")
     }
     
     private func updateToolbarURLInputAndLoadIfNeeded(forceLoad: Bool = false) {
         guard let pane = currentActiveAlveoPaneObject else {
-            toolbarURLInput = ""
-            print("[UpdateToolbar] Aucun espace actif.")
+            toolbarURLInput = "" // Pas d'Espace actif, vider la barre d'URL
+            print("[UpdateToolbar] Aucun Espace actif.")
             return
         }
         
+        // Obtenir le WebViewHelper spécifique à cet Espace
         let paneWebViewHelper = getWebViewHelper(for: pane.id)
         var urlStringToSetForToolbar: String = "about:blank"
         var urlToActuallyLoad: URL? = nil
@@ -76,14 +78,14 @@ struct ContentView: View {
             print("[UpdateToolbar] Espace: \(pane.name ?? "N/A"), Onglet actif: \(tabToLoad.displayTitle), URL: \(tabToLoad.urlString)")
             urlStringToSetForToolbar = tabToLoad.urlString
             if forceLoad {
-                urlToActuallyLoad = tabToLoad.displayURL // S'attend à une URL complète
+                urlToActuallyLoad = tabToLoad.displayURL // displayURL devrait retourner une URL valide ou nil
             }
-        } else if let firstTab = pane.sortedTabs.first { // Si aucun onglet sélectionné, prendre le premier
+        } else if let firstTab = pane.sortedTabs.first {
             print("[UpdateToolbar] Espace: \(pane.name ?? "N/A"), Pas d'onglet actif, sélection du premier: \(firstTab.displayTitle)")
-            pane.currentTabID = firstTab.id // Ceci déclenchera un autre appel à cette fonction via .onChange
+            pane.currentTabID = firstTab.id // Ceci déclenchera .onChange(of: currentTabID), qui rappellera cette fonction
             urlStringToSetForToolbar = firstTab.urlString
-            // Le chargement sera géré par le prochain appel à cette fonction déclenché par le .onChange(of: currentTabID)
-        } else { // Aucun onglet dans l'espace
+            // Le chargement sera géré par l'appel suivant à cette fonction, déclenché par .onChange.
+        } else { // Aucun onglet dans l'Espace
             print("[UpdateToolbar] Espace: \(pane.name ?? "N/A"), Aucun onglet. Ajout d'un onglet vide.")
             pane.addTab(urlString: "about:blank") // addTab définit currentTabID, ce qui rappellera cette fonction.
             urlStringToSetForToolbar = "about:blank"
@@ -95,23 +97,25 @@ struct ContentView: View {
         }
         
         if let finalURLToLoad = urlToActuallyLoad {
-            // Charger seulement si 'forceLoad' est vrai OU si l'URL actuelle du webView est différente
-            if forceLoad || paneWebViewHelper.currentURL?.absoluteString != finalURLToLoad.absoluteString {
-                print("[UpdateToolbar] Demande de chargement à paneWebViewHelper (\(Unmanaged.passUnretained(paneWebViewHelper).toOpaque())) URL: \(finalURLToLoad.absoluteString)")
+            if forceLoad {
+                print("[UpdateToolbar] Forçage chargement. Helper: \(Unmanaged.passUnretained(paneWebViewHelper).toOpaque()), URL: \(finalURLToLoad.absoluteString)")
+                paneWebViewHelper.loadURL(finalURLToLoad)
+            } else if paneWebViewHelper.currentURL?.absoluteString != finalURLToLoad.absoluteString {
+                print("[UpdateToolbar] URL différente, chargement. Helper: \(Unmanaged.passUnretained(paneWebViewHelper).toOpaque()), URL: \(finalURLToLoad.absoluteString)")
                 paneWebViewHelper.loadURL(finalURLToLoad)
             } else {
-                print("[UpdateToolbar] Déjà sur l'URL \(finalURLToLoad.absoluteString) ou chargement non forcé.")
+                print("[UpdateToolbar] Non chargé (pas de forceLoad et URL identique ou helper déjà en chargement): \(finalURLToLoad.absoluteString)")
             }
         } else if forceLoad && (urlStringToSetForToolbar == "about:blank" || urlStringToSetForToolbar.isEmpty) {
-             // Si on force le chargement et que l'URL cible est vide ou about:blank
             if let blankURL = URL(string: "about:blank") {
-                 print("[UpdateToolbar] Forcer chargement de about:blank car forceLoad=true et url est vide/about:blank.")
-                 paneWebViewHelper.loadURL(blankURL)
+                print("[UpdateToolbar] Forçage chargement about:blank (urlToActuallyLoad était nil). Helper: \(Unmanaged.passUnretained(paneWebViewHelper).toOpaque())")
+                paneWebViewHelper.loadURL(blankURL)
             }
         }
     }
     
     private func fetchToolbarHistorySuggestions(for query: String) {
+        // ... (votre code existant, semble correct)
         let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedQuery.isEmpty else { filteredToolbarHistory = []; return }
         let predicate = #Predicate<HistoryItem> {
@@ -128,7 +132,7 @@ struct ContentView: View {
     }
     
     private func addAlveoPane(name: String? = nil, withURL url: URL) {
-        saveCurrentTabState() // Sauvegarder l'état de l'onglet actuel avant de changer d'espace
+        saveCurrentTabState() // Sauvegarder l'état de l'onglet/espace actuel AVANT de changer
         let paneName = name ?? "Espace \(alveoPanes.count + 1)"
         let newPane = AlveoPane(name: paneName, initialTabURLString: url.absoluteString)
         modelContext.insert(newPane)
@@ -142,6 +146,7 @@ struct ContentView: View {
     
     // MARK: - View Builders
     @ViewBuilder private var noActivePanesView: some View {
+        // ... (votre code existant, semble correct)
         VStack {
             Text("Bienvenue dans Alveo !").font(.largeTitle)
             Text("Créez votre premier Espace pour commencer.").foregroundStyle(.secondary)
@@ -152,6 +157,7 @@ struct ContentView: View {
     }
     
     private func addAlveoPaneDialog() -> some View {
+        // ... (votre code existant, semble correct)
         VStack {
             Text("Nouvel Espace").font(.headline).padding(.bottom)
             TextField("Nom de l'Espace (optionnel)", text: $newAlveoPaneName).textFieldStyle(RoundedBorderTextFieldStyle())
@@ -170,7 +176,7 @@ struct ContentView: View {
     
     @ToolbarContentBuilder private func mainToolbarContent(geometry: GeometryProxy) -> some ToolbarContent {
         ToolbarItemGroup(placement: .navigation) {
-            if let helper = currentWebViewHelper { // Utiliser currentWebViewHelper
+            if let helper = currentWebViewHelper { // Utilise currentWebViewHelper
                 Button { if helper.canGoBack { helper.goBack() } } label: { Image(systemName: "chevron.left") }
                     .disabled(!helper.canGoBack)
                 Button { if helper.canGoForward { helper.goForward() } } label: { Image(systemName: "chevron.right") }
@@ -178,7 +184,7 @@ struct ContentView: View {
             }
         }
         ToolbarItem(placement: .principal) {
-            if let helper = currentWebViewHelper { // Utiliser currentWebViewHelper
+            if let helper = currentWebViewHelper { // Utilise currentWebViewHelper
                 PrincipalToolbarView(
                     webViewHelper: helper,
                     urlInput: $toolbarURLInput,
@@ -193,7 +199,10 @@ struct ContentView: View {
         ToolbarItemGroup(placement: .primaryAction) {
             Menu {
                 ForEach(alveoPanes) { paneItem in
-                    Button { saveCurrentTabState(); activeAlveoPaneID = paneItem.id } label: {
+                    Button {
+                        saveCurrentTabState() // Sauvegarder AVANT de changer activeAlveoPaneID
+                        activeAlveoPaneID = paneItem.id
+                    } label: {
                         HStack { Text(paneItem.name ?? "Espace"); if paneItem.id == activeAlveoPaneID { Image(systemName: "checkmark") } }
                     }
                 }
@@ -201,15 +210,18 @@ struct ContentView: View {
                 Button("Nouvel Espace...") { showAddAlveoPaneDialog = true }
                 if let paneID = activeAlveoPaneID, let paneToDelete = alveoPanes.first(where: { $0.id == paneID }) {
                     Button("Supprimer l'Espace Actif", role: .destructive) {
+                        // La sauvegarde de l'état de l'espace à supprimer n'est pas nécessaire
+                        // car il va être supprimé.
+                        webViewHelpers.removeValue(forKey: paneToDelete.id) // Nettoyer le helper
                         modelContext.delete(paneToDelete)
-                        // La logique de sélection du prochain espace est gérée par .onChange(of: alveoPanes.count)
+                        // La sélection du prochain espace est gérée par .onChange(of: alveoPanes.count)
                     }
                 }
             } label: { Label("Espaces", systemImage: "square.stack.3d.down.right") }
             
             Button { currentActiveAlveoPaneObject?.addTab(urlString: "about:blank") } label: { Image(systemName: "plus.circle") }
             
-            if let helper = currentWebViewHelper { // Utiliser currentWebViewHelper
+            if let helper = currentWebViewHelper { // Utilise currentWebViewHelper
                 Button { helper.reload() } label: { Image(systemName: "arrow.clockwise") }.disabled(helper.isLoading)
             }
         }
@@ -219,18 +231,18 @@ struct ContentView: View {
     var body: some View {
         GeometryReader { geometry in
             NavigationStack {
-                HSplitView { // Utilisation de HSplitView pour le volet latéral
+                HSplitView { // Structure avec volet latéral
                     // Volet gauche (Sidebar)
                     if let activePaneToDisplay = currentActiveAlveoPaneObject {
                         SidebarView(
                             pane: activePaneToDisplay,
-                            webViewHelper: getWebViewHelper(for: activePaneToDisplay.id)
+                            webViewHelper: getWebViewHelper(for: activePaneToDisplay.id) // Passe le helper de l'Espace actif
                         )
                         .frame(minWidth: 180, idealWidth: 240, maxWidth: 400)
                     } else {
                         Text("Aucun espace sélectionné.")
                             .frame(minWidth: 180, idealWidth: 240, maxWidth: 400)
-                            .background(Color(NSColor.controlBackgroundColor)) // Couleur de fond pour le placeholder
+                            .background(Color(NSColor.controlBackgroundColor))
                     }
                     
                     // Volet principal (WebView)
@@ -238,7 +250,7 @@ struct ContentView: View {
                         if let activePaneToDisplay = currentActiveAlveoPaneObject {
                             ActiveAlveoPaneContainerView(
                                 pane: activePaneToDisplay,
-                                webViewHelper: getWebViewHelper(for: activePaneToDisplay.id),
+                                webViewHelper: getWebViewHelper(for: activePaneToDisplay.id), // Passe le helper de l'Espace actif
                                 globalURLInput: $toolbarURLInput
                             )
                         } else {
@@ -257,23 +269,23 @@ struct ContentView: View {
                     
                     DispatchQueue.main.async { NSApplication.shared.windows.first { $0.isMainWindow }?.title = "" }
                 }
-                .onChange(of: alveoPanes.count) {
+                .onChange(of: alveoPanes.count) { // Gère la suppression/ajout d'Espaces
                     if let activeID = activeAlveoPaneID, !alveoPanes.contains(where: { $0.id == activeID }) {
-                        activeAlveoPaneID = alveoPanes.first?.id
+                        // L'espace actif a été supprimé
+                        activeAlveoPaneID = alveoPanes.first?.id // Sélectionner le premier Espace restant, ou nil
                     } else if activeAlveoPaneID == nil && !alveoPanes.isEmpty {
+                        // Aucun Espace actif, mais il y en a, sélectionner le premier
                         activeAlveoPaneID = alveoPanes.first?.id
                     }
-                    // L'appel à updateToolbarURLInputAndLoadIfNeeded sera fait par le .onChange(of: activeAlveoPaneID)
+                    // Le .onChange(of: activeAlveoPaneID) se chargera de l'update/load si activeAlveoPaneID change
                 }
-                .onChange(of: activeAlveoPaneID) {
+                .onChange(of: activeAlveoPaneID) { // Gère le changement d'Espace actif
                     print("[ContentView] activeAlveoPaneID changé en: \(String(describing: activeAlveoPaneID))")
-                    // Sauvegarder l'état de l'ancien onglet/espace n'est pas fait ici,
-                    // car l'ancien activeAlveoPaneID n'est plus directement accessible.
-                    // La sauvegarde devrait se faire AVANT de changer activeAlveoPaneID.
+                    // La sauvegarde de l'état de l'ancien onglet/espace a dû être faite *avant* ce changement.
                     updateToolbarURLInputAndLoadIfNeeded(forceLoad: true)
                 }
-                .onChange(of: currentActiveAlveoPaneObject?.currentTabID) {
-                     print("[ContentView] currentTabID de l'espace \(currentActiveAlveoPaneObject?.name ?? "N/A") changé en: \(String(describing: currentActiveAlveoPaneObject?.currentTabID))")
+                .onChange(of: currentActiveAlveoPaneObject?.currentTabID) { // Gère le changement d'onglet DANS l'Espace actif
+                     print("[ContentView] currentTabID de l'Espace \(currentActiveAlveoPaneObject?.name ?? "N/A") changé en: \(String(describing: currentActiveAlveoPaneObject?.currentTabID))")
                     updateToolbarURLInputAndLoadIfNeeded(forceLoad: true)
                 }
                 .sheet(isPresented: $showAddAlveoPaneDialog) { addAlveoPaneDialog() }
