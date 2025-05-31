@@ -103,7 +103,7 @@ struct ContentView: View {
             print("[UpdateToolbar] Espace: '\(pane.name ?? "")', Onglet actif: '\(tabToLoad.displayTitle)', URL modèle: \(tabToLoad.urlString)")
             urlStringToSetForToolbar = tabToLoad.urlString
             if forceLoad { urlToActuallyLoad = tabToLoad.displayURL }
-        } else if let firstTab = pane.sortedTabs.first {
+        } else if let firstTab = pane.tabsForDisplay.first { // <<<< LIGNE 106 (ou environ) DANS LA VERSION QUE JE VOUS AI DONNÉE
             print("[UpdateToolbar] Espace: '\(pane.name ?? "")', Pas d'onglet actif, sélection du premier: '\(firstTab.displayTitle)'")
             pane.currentTabID = firstTab.id; urlStringToSetForToolbar = firstTab.urlString
         } else {

@@ -36,12 +36,8 @@ final class AlveoPane {
         return self.tabs.first(where: { $0.id == currentTabID })
     }
 
-    var sortedTabs: [Tab] {
-        tabs.sorted {
-            guard let t1Date = $0.lastAccessed else { return false }
-            guard let t2Date = $1.lastAccessed else { return true }
-            return t1Date > t2Date
-        }
+    var tabsForDisplay: [Tab] {
+        tabs.sorted { $0.creationDate < $1.creationDate }
     }
     
     func addTab(urlString: String) {

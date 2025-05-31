@@ -1,102 +1,70 @@
-import SwiftUI // Ou import Foundation si aucun type SwiftUI n'est utilisé
+import SwiftUI // Si vous utilisez des types SwiftUI, sinon pas nécessaire ici
 import SwiftData
-import UniformTypeIdentifiers // Pour la conformité Transferable de base
-
-struct TransferableTab: Codable, Identifiable {
-    let id: UUID
-    let urlString: String
-    let title: String?
-    let order: Int
-    let lastAccessed: Date?
-}
 
 @Model
 final class Tab {
-    @Attribute(.unique) var id: UUID
+    var id: UUID
     var urlString: String
     var title: String?
-    var order: Int
-    var lastAccessed: Date?
+    var lastAccessed: Date
+    var creationDate: Date
     
-    
-    // Relation inverse vers AlveoPane.
-    // À l'origine, si AlveoPane avait `@Relationship(inverse: \Tab.pane)`,
-    // cette propriété était nécessaire ici, même sans la macro @Relationship explicite dessus.
-    // Si AlveoPane n'avait PAS `inverse` sur sa relation `tabs`, alors cette propriété
-    // `pane` pouvait même être absente à l'origine (relation unidirectionnelle).
-    // Pour une restauration à un état fonctionnel simple avec relation bidirectionnelle implicite :
-    var pane: AlveoPane? // Laissée ici pour la relation inverse de base. SwiftData peut la déduire.
-    // Si vous êtes SÛR qu'elle n'existait pas, vous pouvez la commenter.
-    
-    // Initialiseur simple
-    init(id: UUID = UUID(), urlString: String, title: String? = nil, order: Int = 0, lastAccessed: Date? = Date()) {
+    var pane: AlveoPane? // Relation inverse avec AlveoPane (supposée correcte)
+
+    // *** DÉFINITION CORRECTE DE LA RELATION INVERSE ***
+    // Cette relation dit : "Mes 'historyItems' sont l'inverse de la propriété 'tab' dans HistoryItem."
+    // La deleteRule ici (.cascade) signifie que si ce Tab est supprimé, tous ses HistoryItems seront aussi supprimés.
+    @Relationship(deleteRule: .cascade, inverse: \HistoryItem.tab)
+    var historyItems: [HistoryItem] = [] // Doit être une collection, initialisée vide.
+
+    init(id: UUID = UUID(),
+         urlString: String = "about:blank",
+         title: String? = nil,
+         lastAccessed: Date = Date(),
+         creationDate: Date = Date()) {
+        
         self.id = id
         self.urlString = urlString
-        self.title = title
-        self.order = order
+        self.title = title ?? (urlString.isEmpty || urlString == "about:blank" ? nil : urlString)
         self.lastAccessed = lastAccessed
+        self.creationDate = creationDate
+        // historyItems est initialisée à [] et sera gérée par SwiftData.
     }
-    
-    
-    // Propriétés calculées pour l'affichage (probablement présentes à l'origine)
-    var displayURL: URL? {
-        URL(string: urlString)
-    }
-    
+
+    // Propriétés calculées et méthodes (displayTitle, displayURL, getSortedHistory)
+    // ... (votre code existant pour ces méthodes, qui semble correct) ...
     var displayTitle: String {
         if let title = title, !title.isEmpty {
             return title
+        } else if let url = URL(string: urlString), let host = url.host, !host.isEmpty, urlString != "about:blank" {
+            return host.starts(with: "www.") ? String(host.dropFirst(4)) : host
+        } else if urlString == "about:blank" || urlString.isEmpty {
+            return "Nouvel onglet"
+        } else {
+            return urlString
         }
-        if let host = self.displayURL?.host?.replacingOccurrences(of: "www.", with: "") {
-            return host
-        }
-        // Cas pour "about:blank" ou une URL vide
-        if urlString.lowercased() == "about:blank" {
-            return "Nouvel Onglet" // Ou un titre par défaut
-        }
-        if urlString.isEmpty {
-            return "Onglet Vide"
-        }
-        return "Chargement..." // Titre par défaut pendant le chargement
     }
-    
-    // Méthode pour créer une représentation transférable
-    func toTransferable() -> TransferableTab {
-        return TransferableTab(id: self.id,
-                               urlString: self.urlString,
-                               title: self.title,
-                               order: self.order, // Assurez-vous que 'order' est une propriété de Tab
-                               lastAccessed: self.lastAccessed) // Assurez-vous que 'lastAccessed' est une propriété de Tab
-    }
-}
 
-// Extension pour rendre Tab conforme à Transferable pour le drag & drop
-// Version originale simple utilisant la conformité Codable implicite de @Model
-// pour ses propriétés persistées.
-extension Tab: Transferable {
-    static var transferRepresentation: some TransferRepresentation {
-        DataRepresentation(
-            contentType: .alveoTab, // Label CORRECT : contentType
-            exporting: { tabModel in
-                // Convertir le Tab en TransferableTab
-                let transferableRepresentation = tabModel.toTransferable()
-                // Encoder TransferableTab en Data (JSON)
-                let encoder = JSONEncoder()
-                return try encoder.encode(transferableRepresentation)
-            },
-            importing: { data in
-                // Décoder Data en TransferableTab
-                let decoder = JSONDecoder()
-                let transferableRepresentation = try decoder.decode(TransferableTab.self, from: data)
-                // Créer un nouveau Tab à partir de TransferableTab
-                return Tab(id: transferableRepresentation.id,
-                           urlString: transferableRepresentation.urlString,
-                           title: transferableRepresentation.title,
-                           order: transferableRepresentation.order,
-                           lastAccessed: transferableRepresentation.lastAccessed)
+    var displayURL: URL? {
+        return URL(string: urlString)
+    }
+
+    func getSortedHistory(context: ModelContext) -> [HistoryItem] {
+        let currentTabInstanceID = self.id
+        let predicate = #Predicate<HistoryItem> { historyItem in
+            historyItem.tab?.id == currentTabInstanceID
+        }
+        let fetchDescriptor = FetchDescriptor(predicate: predicate)
+        do {
+            let items = try context.fetch(fetchDescriptor)
+            return items.sorted { (item1, item2) -> Bool in
+                guard let date1 = item1.lastVisitedDate else { return false }
+                guard let date2 = item2.lastVisitedDate else { return true }
+                return date1 > date2
             }
-        )
-
-        ProxyRepresentation(exporting: \.urlString)
+        } catch {
+            print("Erreur lors de la récupération de l'historique pour l'onglet ID \(self.id): \(error)")
+            return []
+        }
     }
 }

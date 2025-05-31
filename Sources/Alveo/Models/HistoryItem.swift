@@ -1,19 +1,27 @@
-// Sources/Alveo/Models/HistoryItem.swift
-import Foundation
+import SwiftUI
 import SwiftData
+
 
 @Model
 final class HistoryItem {
-    @Attribute(.unique) var urlString: String // L'URL elle-même peut être l'ID si vous la normalisez
+    var id: UUID
+    var urlString: String
     var title: String?
-    var lastVisitedDate: Date
-    var visitCount: Int
+    var lastVisitedDate: Date?
 
-    init(urlString: String, title: String? = nil, lastVisitedDate: Date = Date(), visitCount: Int = 1) {
-        self.urlString = urlString.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() // Normaliser
+    // Relation simplifiée. SwiftData devrait inférer l'inverse depuis Tab.historyItems.
+    // On ne spécifie PAS @Relationship ici si Tab.historyItems le fait avec l'inverse correct.
+    var tab: Tab?
+
+    init(id: UUID = UUID(),
+         urlString: String,
+         title: String? = nil,
+         lastVisitedDate: Date? = Date(),
+         tab: Tab? = nil) {
+        self.id = id
+        self.urlString = urlString
         self.title = title
         self.lastVisitedDate = lastVisitedDate
-        self.visitCount = visitCount
+        self.tab = tab
     }
 }
-
