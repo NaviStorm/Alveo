@@ -1,8 +1,9 @@
-import SwiftUI // Pour @MainActor et ObservableObject
-import WebKit   // Pour WKWebView et KVO
+import SwiftUI
+import WebKit
 
 @MainActor
-class WebViewHelper: ObservableObject {
+class WebViewHelper: ObservableObject, Identifiable { // Ajout de Identifiable
+    let id = UUID() // Identifiant unique pour chaque instance de WebViewHelper
     let webView: WKWebView
     
     @Published var currentURL: URL?
@@ -12,7 +13,6 @@ class WebViewHelper: ObservableObject {
     @Published var canGoForward: Bool = false
     @Published var estimatedProgress: Double = 0.0
     
-    // Callback pour informer ContentView des changements de navigation
     var onNavigationEvent: ((_ newURL: URL?, _ newTitle: String?) -> Void)?
     
     private var progressObservation: NSKeyValueObservation?
@@ -24,10 +24,8 @@ class WebViewHelper: ObservableObject {
     
     init(customUserAgent: String? = nil) {
         let configuration = WKWebViewConfiguration()
-        // Activer JavaScript (généralement souhaité)
         configuration.preferences.javaScriptEnabled = true
-        // Permettre aux fenêtres JavaScript de s'ouvrir (si nécessaire, sinon le supprimer)
-        // configuration.preferences.javaScriptCanOpenWindowsAutomatically = true
+        // configuration.preferences.javaScriptCanOpenWindowsAutomatically = true // Décommentez si nécessaire
         
         self.webView = WKWebView(frame: .zero, configuration: configuration)
         
@@ -35,147 +33,94 @@ class WebViewHelper: ObservableObject {
             self.webView.customUserAgent = agent
         }
         
+        print(">>> [WebViewHelper INIT] Créé helper ID: \(self.id), WKWebView ID: \(Unmanaged.passUnretained(self.webView).toOpaque())")
         setupKeyValueObservations()
     }
     
-    // Assurez-vous que cette méthode est appelée dans l'init
     private func setupKeyValueObservations() {
-        // Observation de l'URL
         urlObservation = webView.observe(\.url, options: [.new, .initial]) { [weak self] webViewInstance, _ in
             guard let self = self else { return }
-            let newURL = webViewInstance.url // L'URL réelle après toute redirection
-            
-            // Mettre à jour sur le thread principal
+            let newURL = webViewInstance.url
             DispatchQueue.main.async {
-                // Mettre à jour la variable @Published uniquement si elle a changé
-                // pour éviter des cycles de mise à jour inutiles dans SwiftUI
                 if self.currentURL != newURL {
                     self.currentURL = newURL
-                    print(">>> [WebViewHelper KVO] URL changé vers: \(newURL?.absoluteString ?? "nil") sur helper \(Unmanaged.passUnretained(self).toOpaque())")
-                    // Appeler le callback pour que ContentView puisse mettre à jour le modèle Tab
+                    print(">>> [WebViewHelper KVO] Helper \(self.id) - URL changé vers: \(newURL?.absoluteString ?? "nil")")
                     self.onNavigationEvent?(newURL, self.pageTitle)
                 }
             }
         }
         
-        // Observation du titre de la page
         titleObservation = webView.observe(\.title, options: [.new, .initial]) { [weak self] webViewInstance, _ in
             guard let self = self else { return }
             let newTitle = webViewInstance.title?.trimmingCharacters(in: .whitespacesAndNewlines)
-            
             DispatchQueue.main.async {
-                // Mettre à jour seulement si le titre a changé et n'est pas vide
-                // Un titre vide peut apparaître brièvement pendant le chargement.
                 if self.pageTitle != newTitle && (newTitle != nil && !newTitle!.isEmpty) {
                     self.pageTitle = newTitle
-                    print(">>> [WebViewHelper KVO] Titre changé vers: '\(newTitle ?? "nil")' sur helper \(Unmanaged.passUnretained(self).toOpaque())")
-                    // Appeler le callback pour que ContentView puisse mettre à jour le modèle Tab
+                    print(">>> [WebViewHelper KVO] Helper \(self.id) - Titre changé vers: '\(newTitle ?? "nil")'")
                     self.onNavigationEvent?(self.currentURL, newTitle)
                 }
             }
         }
         
-        // Observation de l'état de chargement
         isLoadingObservation = webView.observe(\.isLoading, options: .new) { [weak self] webViewInstance, _ in
             guard let self = self else { return }
             let loadingState = webViewInstance.isLoading
-            
             DispatchQueue.main.async {
                 if self.isLoading != loadingState {
                     self.isLoading = loadingState
-                    // Réinitialiser la progression si le chargement est terminé
-                    if !loadingState {
-                        self.estimatedProgress = 0.0
-                    }
-                     print(">>> [WebViewHelper KVO] isLoading: \(loadingState) sur helper \(Unmanaged.passUnretained(self).toOpaque())")
+                    if !loadingState { self.estimatedProgress = 0.0 }
+                    print(">>> [WebViewHelper KVO] Helper \(self.id) - isLoading: \(loadingState)")
                 }
             }
         }
-        
-        // Observation de la possibilité de revenir en arrière
-        canGoBackObservation = webView.observe(\.canGoBack, options: .new) { [weak self] webViewInstance, _ in
-            guard let self = self else { return }
-            let canGoBackState = webViewInstance.canGoBack
-            
-            DispatchQueue.main.async {
-                if self.canGoBack != canGoBackState {
-                    self.canGoBack = canGoBackState
-                }
-            }
-        }
-        
-        // Observation de la possibilité d'aller en avant
-        canGoForwardObservation = webView.observe(\.canGoForward, options: .new) { [weak self] webViewInstance, _ in
-            guard let self = self else { return }
-            let canGoForwardState = webViewInstance.canGoForward
-            
-            DispatchQueue.main.async {
-                if self.canGoForward != canGoForwardState {
-                    self.canGoForward = canGoForwardState
-                }
-            }
-        }
-        
-        // Observation de la progression estimée du chargement
-        progressObservation = webView.observe(\.estimatedProgress, options: .new) { [weak self] webViewInstance, _ in
-            guard let self = self else { return }
-            let progress = webViewInstance.estimatedProgress
-            
-            DispatchQueue.main.async {
-                self.estimatedProgress = progress
-            }
-        }
+        canGoBackObservation = webView.observe(\.canGoBack, options: .new) { [weak self] w, _ in DispatchQueue.main.async { if self?.canGoBack != w.canGoBack { self?.canGoBack = w.canGoBack } } }
+        canGoForwardObservation = webView.observe(\.canGoForward, options: .new) { [weak self] w, _ in DispatchQueue.main.async { if self?.canGoForward != w.canGoForward { self?.canGoForward = w.canGoForward } } }
+        progressObservation = webView.observe(\.estimatedProgress, options: .new) { [weak self] w, _ in DispatchQueue.main.async { self?.estimatedProgress = w.estimatedProgress } }
     }
 
     func loadURL(_ url: URL) {
-        print(">>> [WebViewHelper loadURL] Chargement effectif de: '\(url.absoluteString)' sur self: \(Unmanaged.passUnretained(self).toOpaque()), sa WKWebView: \(Unmanaged.passUnretained(webView).toOpaque())")
+        print(">>> [WebViewHelper loadURL] Helper \(self.id) - Chargement effectif de: '\(url.absoluteString)' sur sa WKWebView: \(Unmanaged.passUnretained(webView).toOpaque())")
         let request = URLRequest(url: url)
         webView.load(request)
     }
     
     func loadURLString(_ urlStringInput: String) {
         let trimmedInput = urlStringInput.trimmingCharacters(in: .whitespacesAndNewlines)
-        print(">>> [WebViewHelper loadURLString] Tentative pour: '\(trimmedInput)' sur self: \(Unmanaged.passUnretained(self).toOpaque())")
+        print(">>> [WebViewHelper loadURLString] Helper \(self.id) - Tentative pour: '\(trimmedInput)'")
         
         guard !trimmedInput.isEmpty else {
             print("[WebViewHelper loadURLString] Input vide, chargement de about:blank")
-            if let blankURL = URL(string: "about:blank") {
-                loadURL(blankURL)
-            }
+            if let blankURL = URL(string: "about:blank") { loadURL(blankURL) }
             return
         }
         
-        // Logique de parsing d'URL (adaptée de votre code GitHub)
         let schemeRegex = try! NSRegularExpression(pattern: "^[a-zA-Z][a-zA-Z0-9+.-]*://")
         let hasScheme = schemeRegex.firstMatch(in: trimmedInput, options: [], range: NSRange(location: 0, length: trimmedInput.utf16.count)) != nil
-        
         var finalURL: URL?
 
         if hasScheme {
             finalURL = URL(string: trimmedInput)
         } else {
             if trimmedInput.lowercased() == "localhost" || trimmedInput.starts(with: "localhost:") {
-                let fullLocalhost = trimmedInput.starts(with: "localhost:") ? "http://\(trimmedInput)" : "http://localhost"
-                finalURL = URL(string: fullLocalhost)
-            } else if trimmedInput.contains(".") && !trimmedInput.contains(" ") { // Contient un point et pas d'espaces (ressemble à un nom de domaine)
+                finalURL = URL(string: (trimmedInput.starts(with: "localhost:") ? "http://" : "http://") + trimmedInput)
+            } else if trimmedInput.contains(".") && !trimmedInput.contains(" ") {
                 finalURL = URL(string: "https://" + trimmedInput)
-            } else if trimmedInput.starts(with: "/") || trimmedInput.starts(with: "file://") { // Chemin de fichier local
+            } else if trimmedInput.starts(with: "/") || trimmedInput.starts(with: "file://") {
                 finalURL = URL(string: trimmedInput.starts(with: "file://") ? trimmedInput : "file://" + trimmedInput)
             }
         }
         
         if let urlToLoad = finalURL {
-             print(">>> [WebViewHelper loadURLString] URL parsée: '\(urlToLoad.absoluteString)'")
+            print(">>> [WebViewHelper loadURLString] URL parsée: '\(urlToLoad.absoluteString)'")
             loadURL(urlToLoad)
-        } else { // Si ce n'est pas une URL valide, considérer comme une recherche
-            let searchEngineBaseURL = "https://www.google.com/search?q=" // Ou votre moteur de recherche préféré
+        } else {
+            let searchEngineBaseURL = "https://www.google.com/search?q="
             if let searchQuery = trimmedInput.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
                let searchURL = URL(string: searchEngineBaseURL + searchQuery) {
                 print(">>> [WebViewHelper loadURLString] URL de recherche: '\(searchURL.absoluteString)'")
                 loadURL(searchURL)
             } else {
-                print(">>> [WebViewHelper loadURLString] ERREUR: Impossible de former une URL ou une requête de recherche pour: '\(trimmedInput)'")
-                // Peut-être charger une page d'erreur ou "about:blank"
+                print(">>> [WebViewHelper loadURLString] ERREUR: Impossible de former URL/recherche pour: '\(trimmedInput)'")
                 if let blankURL = URL(string: "about:blank") { loadURL(blankURL) }
             }
         }
@@ -187,13 +132,8 @@ class WebViewHelper: ObservableObject {
     func stopLoading() { webView.stopLoading() }
     
     deinit {
-        print(">>> [WebViewHelper DEINIT] Helper \(Unmanaged.passUnretained(self).toOpaque()) est déinitialisé.")
-        urlObservation?.invalidate()
-        titleObservation?.invalidate()
-        isLoadingObservation?.invalidate()
-        canGoBackObservation?.invalidate()
-        canGoForwardObservation?.invalidate()
-        progressObservation?.invalidate()
+        print(">>> [WebViewHelper DEINIT] Helper \(self.id) est déinitialisé.")
+        urlObservation?.invalidate(); titleObservation?.invalidate(); isLoadingObservation?.invalidate()
+        canGoBackObservation?.invalidate(); canGoForwardObservation?.invalidate(); progressObservation?.invalidate()
     }
 }
-

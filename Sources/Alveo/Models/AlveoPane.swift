@@ -1,68 +1,100 @@
-import SwiftUI // Ou import Foundation si pas de types SwiftUI spécifiques
+import SwiftUI
 import SwiftData
 
 @Model
 final class AlveoPane {
-    @Attribute(.unique) var id: UUID
-    var name: String? // Nom optionnel pour le panneau
-    var creationDate: Date // Date de création pour le tri
-
-    // Relation avec les onglets. 'tabs' est optionnel et initialisé à un tableau vide.
-    // La règle de suppression .cascade signifie que si un AlveoPane est supprimé,
-    // tous ses onglets associés seront également supprimés.
-    @Relationship(deleteRule: .cascade) // Pas de 'inverse' spécifié explicitement ici à l'origine
-    var tabs: [Tab] = [] // Array non-optionnel d'onglets
+    var id: UUID
+    var name: String?
+    var creationDate: Date
+    var lastAccessed: Date?
+    var currentTabID: UUID?
     
-    var currentTabID: UUID? // ID de l'onglet actuellement sélectionné dans ce panneau
+    @Relationship(deleteRule: .cascade, inverse: \Tab.pane)
+    var tabs: [Tab] = []
 
-    // Initialiseur
     init(id: UUID = UUID(), name: String? = nil, creationDate: Date = Date(), initialTabURLString: String? = nil) {
         self.id = id
         self.name = name
         self.creationDate = creationDate
+        self.lastAccessed = creationDate
         
         if let urlString = initialTabURLString, !urlString.isEmpty {
-            // Créer un onglet initial si une URL est fournie
-            let initialTab = Tab(urlString: urlString) // Utilise l'init original de Tab
-            // self.tabs.append(initialTab) // Ajoute à l'array optionnel
-            // Si tabs est nil, il faut d'abord l'initialiser :
+            // CORRECTION: Supprimer l'argument 'pane: self'
+            let initialTab = Tab(urlString: urlString)
             self.tabs.append(initialTab)
             self.currentTabID = initialTab.id
         } else {
-            // Si pas d'URL initiale, tabs reste ce qu'il est (nil ou []) et pas d'onglet courant
-            // Pour être sûr, on pourrait faire :
-            // self.tabs = []
-            self.currentTabID = nil
+            // CORRECTION: Supprimer l'argument 'pane: self'
+            let defaultTab = Tab(urlString: "about:blank")
+            self.tabs.append(defaultTab)
+            self.currentTabID = defaultTab.id
         }
     }
 
-    // Propriété calculée pour obtenir les onglets triés (si nécessaire, mais l'ordre n'était pas géré par Tab à l'origine)
-    // Si Tab n'a pas de propriété 'order', on ne peut pas trier par 'order'.
-    // On pourrait trier par un autre critère si besoin, ou simplement retourner les onglets.
+    var currentTab: Tab? {
+        guard let currentTabID = self.currentTabID else { return nil }
+        return self.tabs.first(where: { $0.id == currentTabID })
+    }
+
     var sortedTabs: [Tab] {
-        // À l'origine, si Tab n'avait pas de propriété 'order', on ne pouvait pas trier ainsi.
-        // On retourne simplement le tableau, ou on le trie par un autre critère (ex: titre, si pertinent).
-        // Pour un affichage simple dans une barre d'onglets horizontale, l'ordre d'ajout est souvent suffisant.
-        return tabs // Retourne un tableau vide si tabs est nil
-    }
-
-    // Méthode pour ajouter un nouvel onglet (version originale simple)
-    func addTab(urlString: String) {
-        let finalURL = urlString.isEmpty ? "about:blank" : urlString
-        let newTab = Tab(urlString: finalURL)
-        self.tabs.append(newTab)
-        self.currentTabID = newTab.id
-        print("Nouvel onglet créé avec URL: \(finalURL)")
-    }
-
-    // Méthode pour supprimer un onglet (logique de base)
-    // Note : La suppression effective se fait souvent via modelContext.delete(tab) dans la vue.
-    // Cette méthode pourrait être utilisée pour la logique interne du modèle si nécessaire.
-    func removeTab(_ tabToRemove: Tab) {
-        tabs.removeAll { $0.id == tabToRemove.id }
-        // Logique additionnelle si l'onglet supprimé était le currentTabID
-        if currentTabID == tabToRemove.id {
-            currentTabID = tabs.first?.id // Sélectionne le premier onglet restant, ou nil
+        tabs.sorted {
+            guard let t1Date = $0.lastAccessed else { return false }
+            guard let t2Date = $1.lastAccessed else { return true }
+            return t1Date > t2Date
         }
+    }
+    
+    func addTab(urlString: String) {
+        // CORRECTION: Supprimer l'argument 'pane: self'
+        let newTab = Tab(urlString: urlString.isEmpty ? "about:blank" : urlString)
+        self.tabs.append(newTab) // SwiftData assignera `newTab.pane = self` ici
+        self.currentTabID = newTab.id
+        self.lastAccessed = Date()
+        print("[AlveoPane ADD_TAB] Espace '\(self.name ?? "")' Nouvel onglet ajouté: \(newTab.displayTitle), ID: \(newTab.id). currentTabID est maintenant: \(String(describing: self.currentTabID))")
+    }
+
+    // La fonction removeTab reste inchangée par rapport à la version précédente que vous aviez,
+    // mais assurez-vous que la suppression de l'objet Tab lui-même (modelContext.delete(tab))
+    // est gérée au bon endroit (probablement dans la vue qui appelle cette suppression, comme SidebarView).
+    // Si vous supprimez juste de la collection `tabs` ici, la cascade devrait fonctionner,
+    // mais une suppression explicite avec modelContext est souvent plus claire.
+    func removeTab(tab: Tab) {
+        // (Logique existante ici)
+        if let indexToRemove = self.tabs.firstIndex(where: { $0.id == tab.id }) {
+            let wasSelected = (self.currentTabID == tab.id)
+            
+            // La suppression de la collection `tabs` dans un modèle @Model qui a une relation
+            // @Relationship(deleteRule: .cascade) devrait normalement entraîner la suppression
+            // de l'objet Tab de la base de données.
+            // Si vous voulez être explicite, vous devriez faire `modelContext.delete(tab)`
+            // AVANT de le retirer de la collection, ou au lieu de le retirer manuellement
+            // si SwiftData gère la mise à jour de la collection après la suppression.
+            // Pour la clarté, la suppression via modelContext est souvent faite par la vue
+            // qui a accès au modelContext.
+            
+            self.tabs.remove(at: indexToRemove)
+            // Si `modelContext.delete(tab)` n'a pas été appelé avant, SwiftData devrait
+            // supprimer l'objet `tab` de la persistance à cause de la règle de cascade
+            // lorsque le `AlveoPane` est sauvegardé sans `tab` dans sa collection `tabs`.
+            
+            if wasSelected {
+                if self.tabs.isEmpty {
+                    self.currentTabID = nil
+                    // Optionnel : ajouter un nouvel onglet vide si c'était le dernier
+                    // addTab(urlString: "about:blank")
+                } else {
+                    let newIndex = min(indexToRemove, self.tabs.count - 1)
+                    if newIndex >= 0 && newIndex < self.tabs.count { // S'assurer que l'index est valide
+                        self.currentTabID = self.tabs[newIndex].id
+                    } else if !self.tabs.isEmpty { // Fallback pour prendre le premier
+                        self.currentTabID = self.tabs.first!.id
+                    } else {
+                        self.currentTabID = nil
+                    }
+                }
+            }
+        }
+        self.lastAccessed = Date()
+        print("[AlveoPane REMOVE_TAB] Espace '\(self.name ?? "")' Onglet supprimé. currentTabID: \(String(describing: self.currentTabID))")
     }
 }

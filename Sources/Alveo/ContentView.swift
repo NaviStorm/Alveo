@@ -81,7 +81,6 @@ struct ContentView: View {
     
     
     private func handleNavigationEvent(forPaneID paneID: UUID, newURL: URL?, newTitle: String?) {
-        // Accède à alveoPanes (@Query) et toolbarURLInput (@State) qui sont gérés par SwiftUI
         guard let activePane = alveoPanes.first(where: { $0.id == paneID }),
               let activeTabID = activePane.currentTabID,
               let activeTab = activePane.tabs.first(where: { $0.id == activeTabID }) else {
@@ -89,29 +88,42 @@ struct ContentView: View {
             return
         }
 
-        var updated = false
+        var tabModelUpdated = false
         if let urlAbsoluteString = newURL?.absoluteString {
             if activeTab.urlString != urlAbsoluteString {
                 activeTab.urlString = urlAbsoluteString
-                print("[Callback NavEvent] Espace \(activePane.name ?? "") Onglet \(activeTab.displayTitle) URL mis à jour: \(urlAbsoluteString)")
-                updated = true
+                print("[Callback NavEvent] Espace '\(activePane.name ?? "")' Onglet '\(activeTab.displayTitle)' URL mis à jour DANS MODELE: \(urlAbsoluteString)")
+                tabModelUpdated = true
             }
         }
         if let title = newTitle, !title.isEmpty {
             if activeTab.title != title {
                 activeTab.title = title
-                print("[Callback NavEvent] Espace \(activePane.name ?? "") Onglet \(activeTab.displayTitle) Titre mis à jour: \(title)")
-                updated = true
+                print("[Callback NavEvent] Espace '\(activePane.name ?? "")' Onglet '\(activeTab.displayTitle)' Titre mis à jour DANS MODELE: \(title)")
+                tabModelUpdated = true
             }
         }
         
-        if updated && activePane.id == self.activeAlveoPaneID && activeTab.id == self.currentActiveAlveoPaneObject?.currentTabID {
-            if let currentTabURL = newURL?.absoluteString, toolbarURLInput != currentTabURL {
-                 toolbarURLInput = currentTabURL
-                 print("[Callback NavEvent] toolbarURLInput mis à jour vers: \(toolbarURLInput)")
+        // Mettre à jour toolbarURLInput SEULEMENT si :
+        // 1. L'Espace et l'onglet correspondent à ce qui est actuellement actif ET
+        // 2. La barre d'adresse N'EST PAS en train d'être éditée par l'utilisateur.
+        //    (isToolbarAddressBarFocused vient de @FocusState dans ContentView)
+        if tabModelUpdated &&
+           activePane.id == self.activeAlveoPaneID &&
+           activeTab.id == self.currentActiveAlveoPaneObject?.currentTabID &&
+           !self.isToolbarAddressBarFocused { // <--- CONDITION CRUCIALE AJOUTÉE
+            
+            if let currentTabActualURL = newURL?.absoluteString {
+                if toolbarURLInput != currentTabActualURL {
+                     toolbarURLInput = currentTabActualURL
+                     print("[Callback NavEvent] toolbarURLInput mis à jour (car non focus) vers: \(currentTabActualURL)")
+                }
             }
+        } else if tabModelUpdated {
+            print("[Callback NavEvent] Modèle Tab mis à jour, mais toolbarURLInput NON modifié (soit pas l'onglet/espace actif, soit barre d'adresse focus). isToolbarAddressBarFocused = \(self.isToolbarAddressBarFocused)")
         }
     }
+    
     
     private func saveCurrentTabState() {
         guard let currentPane = currentActiveAlveoPaneObject,
