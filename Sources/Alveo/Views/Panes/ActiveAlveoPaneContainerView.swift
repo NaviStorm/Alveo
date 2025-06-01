@@ -3,25 +3,30 @@ import SwiftData
 
 @MainActor
 struct ActiveAlveoPaneContainerView: View {
-    @Bindable var activePaneToDisplay: AlveoPane
-    @StateObject var webViewHelperForActivePane: WebViewHelper
-    @Binding var globalURLInputFromToolbar: String
+    @Bindable var pane: AlveoPane
+    @ObservedObject var webViewHelper: WebViewHelper
+    @Binding var globalURLInput: String
     
-    init(
-        pane: AlveoPane,
-        webViewHelper: WebViewHelper,
-        globalURLInput: Binding<String>
-    ) {
-        self._activePaneToDisplay = Bindable(wrappedValue: pane)
-        self._webViewHelperForActivePane = StateObject(wrappedValue: webViewHelper)
-        self._globalURLInputFromToolbar = globalURLInput
-    }
-    
+    // Accès aux autres helpers pour la vue fractionnée
+    @Environment(\.modelContext) private var modelContext
+
     var body: some View {
-        AlveoPaneView(
-            pane: activePaneToDisplay,
-            webViewHelper: webViewHelperForActivePane,
-            globalURLInput: $globalURLInputFromToolbar
-        )
+        VStack(spacing: 0) {
+            if pane.isSplitViewActive && !pane.splitViewTabs.isEmpty {
+                // Vue fractionnée
+                SplitWebView(
+                    pane: pane,
+                    webViewHelpers: [pane.id: webViewHelper], // Pour l'instant, utiliser le même helper
+                    globalURLInput: $globalURLInput
+                )
+            } else {
+                // Vue normale (un seul onglet)
+                AlveoPaneView(
+                    pane: pane,
+                    webViewHelper: webViewHelper,
+                    globalURLInput: $globalURLInput
+                )
+            }
+        }
     }
 }

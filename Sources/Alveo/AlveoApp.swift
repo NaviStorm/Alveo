@@ -24,21 +24,32 @@ struct AlveoApp: App {
                 .modelContainer(sharedModelContainer)
         }
         .commands {
-            // Ajouter nos commandes personnalisées dans le menu Fichier
+            // Menu Fichier
             CommandGroup(after: .newItem) {
                 Button("Nouvel Onglet") {
-                    print("Menu: Nouvel Onglet cliqué")
                     NotificationCenter.default.post(name: .createNewTabFromMenu, object: nil)
                 }
                 .keyboardShortcut("t", modifiers: .command)
                 
                 Button("Fermer l'Onglet") {
-                    print("Menu: Fermer l'Onglet cliqué")
                     NotificationCenter.default.post(name: .closeTabOrWindowFromMenu, object: nil)
                 }
                 .keyboardShortcut("w", modifiers: .command)
                 
                 Divider()
+            }
+            
+            // Nouveau menu Affichage
+            CommandMenu("Affichage") {
+                Button("Vue fractionnée") {
+                    NotificationCenter.default.post(name: .enableSplitViewFromMenu, object: nil)
+                }
+                .keyboardShortcut("d", modifiers: [.command, .shift])
+                
+                Button("Fermer Vue fractionnée") {
+                    NotificationCenter.default.post(name: .disableSplitViewFromMenu, object: nil)
+                }
+                .keyboardShortcut("d", modifiers: [.command, .shift, .option])
             }
         }
     }
@@ -48,4 +59,6 @@ struct AlveoApp: App {
 extension Notification.Name {
     static let createNewTabFromMenu = Notification.Name("createNewTabFromMenuNotification")
     static let closeTabOrWindowFromMenu = Notification.Name("closeTabOrWindowFromMenuNotification")
+    static let enableSplitViewFromMenu = Notification.Name("enableSplitViewFromMenuNotification")
+    static let disableSplitViewFromMenu = Notification.Name("disableSplitViewFromMenuNotification")
 }

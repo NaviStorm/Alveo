@@ -20,7 +20,7 @@ struct ContentView: View {
     @State private var newAlveoPaneName: String = ""
     @State private var initialAlveoPaneURLString: String = "https://www.google.com"
     @State private var tabHistory: [UUID] = [] // Historique des onglets actifs (le plus récent en premier)
-
+    
     // MARK: - Computed Properties
     var currentActiveAlveoPaneObject: AlveoPane? {
         guard let activeID = activeAlveoPaneID else { return alveoPanes.first }
@@ -44,7 +44,7 @@ struct ContentView: View {
         }
         activePane.addTab(urlString: "about:blank")
     }
-
+    
     private func closeCurrentTabOrWindowAction() {
         print("[ContentView ACTION] Fermer Onglet ou Fenêtre (Cmd-W)")
         if let activePane = currentActiveAlveoPaneObject,
@@ -60,7 +60,7 @@ struct ContentView: View {
             tabHistory.removeAll { $0 == tabIDToClose }
             
             modelContext.delete(tabToClose)
-
+            
             if activePane.tabs.isEmpty {
                 activePane.currentTabID = nil
                 print("[ContentView ACTION] Dernier onglet fermé. Espace vide.")
@@ -115,7 +115,7 @@ struct ContentView: View {
         webViewHelpers[paneID] = newHelper
         return newHelper
     }
-
+    
     private func ensureWebViewHelperExists(for paneID: UUID) -> WebViewHelper {
         if let existingHelper = webViewHelpers[paneID] {
             return existingHelper
@@ -131,7 +131,7 @@ struct ContentView: View {
             print("[Callback NavEvent] Pane ou Tab non trouvé pour paneID: \(paneID)")
             return
         }
-
+        
         var tabModelUpdated = false
         if let urlAbsoluteString = newURL?.absoluteString, tabForEvent.urlString != urlAbsoluteString {
             tabForEvent.urlString = urlAbsoluteString
@@ -145,13 +145,13 @@ struct ContentView: View {
         }
         
         if tabModelUpdated &&
-           paneID == self.activeAlveoPaneID &&
-           tabIDForEvent == self.currentActiveAlveoPaneObject?.currentTabID &&
-           !self.isToolbarAddressBarFocused {
+            paneID == self.activeAlveoPaneID &&
+            tabIDForEvent == self.currentActiveAlveoPaneObject?.currentTabID &&
+            !self.isToolbarAddressBarFocused {
             
             if let currentTabActualURL = newURL?.absoluteString, toolbarURLInput != currentTabActualURL {
-                 toolbarURLInput = currentTabActualURL
-                 print("[Callback NavEvent] toolbarURLInput mis à jour: \(currentTabActualURL)")
+                toolbarURLInput = currentTabActualURL
+                print("[Callback NavEvent] toolbarURLInput mis à jour: \(currentTabActualURL)")
             }
         }
     }
@@ -201,7 +201,7 @@ struct ContentView: View {
                 urlToActuallyLoad = newTab.displayURL
             }
         }
-
+        
         if toolbarURLInput != urlStringToSetForToolbar && !isToolbarAddressBarFocused {
             toolbarURLInput = urlStringToSetForToolbar
             print("[UpdateToolbar] toolbarURLInput mis à jour: \(toolbarURLInput)")
@@ -270,7 +270,7 @@ struct ContentView: View {
         newAlveoPaneName = ""
         initialAlveoPaneURLString = "https://www.google.com"
     }
-
+    
     @ViewBuilder
     private var noActivePanesView: some View {
         VStack {
@@ -287,7 +287,7 @@ struct ContentView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-
+    
     private func addAlveoPaneDialog() -> some View {
         VStack {
             Text("Nouvel Espace")
@@ -395,7 +395,7 @@ struct ContentView: View {
             .disabled(helper.isLoading)
         }
     }
-
+    
     // MARK: - Body
     var body: some View {
         GeometryReader { geometry in
@@ -475,14 +475,14 @@ struct ContentView: View {
                     if previousActiveID != activeAlveoPaneID {
                         // Géré par .onChange(of: activeAlveoPaneID)
                     } else if let currentID = activeAlveoPaneID {
-                         updateToolbarURLInputAndLoadIfNeeded(forPaneID: currentID, forceLoad: true)
+                        updateToolbarURLInputAndLoadIfNeeded(forPaneID: currentID, forceLoad: true)
                     }
                 }
                 .onChange(of: activeAlveoPaneID) { oldValue, newValue in
                     print(">>> [CV .onChange(activeAlveoPaneID)] \(String(describing: oldValue)) -> \(String(describing: newValue))")
                     if let oldPaneID = oldValue,
                        let oldPane = alveoPanes.first(where: {$0.id == oldPaneID}) {
-                         saveCurrentTabState(forPaneID: oldPaneID, forTabID: oldPane.currentTabID)
+                        saveCurrentTabState(forPaneID: oldPaneID, forTabID: oldPane.currentTabID)
                     }
                     if let newPaneID = newValue {
                         let _ = ensureWebViewHelperExists(for: newPaneID)
@@ -524,6 +524,12 @@ struct ContentView: View {
                 .onReceive(NotificationCenter.default.publisher(for: .closeTabOrWindowFromMenu)) { _ in
                     closeCurrentTabOrWindowAction()
                 }
+                .onReceive(NotificationCenter.default.publisher(for: .enableSplitViewFromMenu)) { _ in
+                    enableSplitViewFromMenu()
+                }
+                .onReceive(NotificationCenter.default.publisher(for: .disableSplitViewFromMenu)) { _ in
+                    disableSplitViewFromMenu()
+                }
             }
         }
         // Boutons invisibles pour les raccourcis clavier
@@ -535,10 +541,28 @@ struct ContentView: View {
                 Button(action: closeCurrentTabOrWindowAction) { EmptyView() }
                     .keyboardShortcut("w", modifiers: .command)
             }
-            .frame(width: 0, height: 0)
-            .opacity(0)
-            .allowsHitTesting(false)
+                .frame(width: 0, height: 0)
+                .opacity(0)
+                .allowsHitTesting(false)
         )
+    }
+    private func enableSplitViewFromMenu() {
+        guard let activePane = currentActiveAlveoPaneObject else { return }
+        
+        if !activePane.isSplitViewActive {
+            // Créer une vue fractionnée avec l'onglet actuel + un onglet vide
+            if let currentTabID = activePane.currentTabID {
+                activePane.addTab(urlString: "about:blank")
+                if let newTabID = activePane.currentTab?.id {
+                    activePane.enableSplitView(with: [currentTabID, newTabID])
+                }
+            }
+        }
+    }
+    
+    private func disableSplitViewFromMenu() {
+        guard let activePane = currentActiveAlveoPaneObject else { return }
+        activePane.disableSplitView()
     }
 }
 

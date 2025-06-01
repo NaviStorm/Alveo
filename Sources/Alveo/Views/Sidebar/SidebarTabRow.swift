@@ -1,10 +1,3 @@
-//
-//  SidebarTabRow.swift
-//  Alveo
-//
-//  Created by Thierry Andreu Asscensio on 31/05/2025.
-//
-
 import SwiftUI
 
 struct SidebarTabRow: View {
@@ -14,39 +7,75 @@ struct SidebarTabRow: View {
     let isSelected: Bool
     let onSelect: () -> Void
     let onClose: () -> Void
+    let onToggleSplitView: () -> Void
     
     @State private var isHovering = false
     @State private var isRenaming = false
     @State private var newName: String = ""
+    @State private var isOptionKeyPressed = false
     
-    // Liste d'emojis pour le changement d'icône
     let emojiList = ["😀", "🚀", "🔥", "🌟", "🐱", "🐶", "🍎", "🍕", "🎉", "💡", "📱", "💻", "🌐", "📧", "🎵", "🎮", "📚", "⚡", "🌈", "🎯"]
+    
+    private var isInSplitView: Bool {
+        pane.splitViewTabIDs.contains(tab.id)
+    }
+    
+    private var shouldShowSplitViewCloseButton: Bool {
+        isHovering && isOptionKeyPressed && isInSplitView
+    }
 
     var body: some View {
         HStack(spacing: 6) {
             tabIcon
             tabContent
             Spacer()
-            if shouldShowCloseButton {
+            
+            if shouldShowSplitViewCloseButton {
+                splitViewCloseButton
+            } else if shouldShowCloseButton {
                 closeButton
             }
         }
         .padding(.vertical, 4)
         .padding(.horizontal, 8)
         .background(tabBackground)
+        .overlay(
+            // Liseret bleu pour l'onglet actif
+            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                .stroke(Color.accentColor, lineWidth: isSelected ? 2 : 0)
+        )
         .contentShape(Rectangle())
-        .onTapGesture {
-            if !isRenaming {
-                onSelect()
-            }
+        .onTapGesture { event in
+            handleTapGesture(event: event)
         }
         .onHover { hovering in
             if !isRenaming {
                 isHovering = hovering
             }
         }
+        .onAppear {
+            // Surveiller les touches Option (Alt)
+            NSEvent.addLocalMonitorForEvents(matching: .flagsChanged) { event in
+                isOptionKeyPressed = event.modifierFlags.contains(.option)
+                return event
+            }
+        }
+        
         .contextMenu {
             contextMenuContent
+        }
+    }
+    
+    // MARK: - Gestion des événements
+    
+    private func handleTapGesture(event: Any) {
+        if !isRenaming {
+            // Vérifier si Option est pressé pour basculer en vue fractionnée
+            if NSEvent.modifierFlags.contains(.option) {
+                onToggleSplitView()
+            } else {
+                onSelect()
+            }
         }
     }
     
@@ -122,10 +151,19 @@ struct SidebarTabRow: View {
     @ViewBuilder
     private var tabInfo: some View {
         VStack(alignment: .leading, spacing: 1) {
-            Text(tab.displayTitle)
-                .font(.system(size: 13, weight: isSelected ? .semibold : .regular))
-                .lineLimit(1)
-                .foregroundColor(isSelected ? .accentColor : .primary)
+            HStack {
+                Text(tab.displayTitle)
+                    .font(.system(size: 13, weight: isSelected ? .semibold : .regular))
+                    .lineLimit(1)
+                    .foregroundColor(isSelected ? .accentColor : .primary)
+                
+                // Indicateur de vue fractionnée
+                if isInSplitView {
+                    Image(systemName: "rectangle.split.2x1")
+                        .font(.system(size: 10))
+                        .foregroundColor(.accentColor)
+                }
+            }
 
             tabSubtitle
         }
@@ -147,7 +185,7 @@ struct SidebarTabRow: View {
     }
     
     private var shouldShowCloseButton: Bool {
-        (isHovering || isSelected) && !isRenaming
+        (isHovering || isSelected) && !isRenaming && !shouldShowSplitViewCloseButton
     }
     
     @ViewBuilder
@@ -163,9 +201,26 @@ struct SidebarTabRow: View {
     }
     
     @ViewBuilder
+    private var splitViewCloseButton: some View {
+        Button(action: {
+            pane.removeTabFromSplitView(tab.id)
+        }) {
+            Image(systemName: "rectangle.split.2x1.slash")
+                .font(.system(size: 9, weight: .medium))
+                .foregroundColor(.orange)
+                .padding(3)
+        }
+        .buttonStyle(.plain)
+        .contentShape(Rectangle())
+    }
+    
+    @ViewBuilder
     private var tabBackground: some View {
         ZStack {
-            if isSelected {
+            if isInSplitView {
+                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    .fill(Color.accentColor.opacity(0.1))
+            } else if isSelected {
                 RoundedRectangle(cornerRadius: 6, style: .continuous)
                     .fill(Color.accentColor.opacity(0.15))
             } else if isHovering {
@@ -248,12 +303,14 @@ struct SidebarTabRow: View {
     @ViewBuilder
     private var splitViewButton: some View {
         Button {
-            // Fonctionnalité future
-            print("Vue fractionnée - fonctionnalité future")
+            handleSplitViewAction()
         } label: {
-            Label("Vue fractionnée", systemImage: "rectangle.split.2x1")
+            if isInSplitView {
+                Label("Retirer de la vue fractionnée", systemImage: "rectangle.split.2x1.slash")
+            } else {
+                Label("Vue fractionnée", systemImage: "rectangle.split.2x1")
+            }
         }
-        .disabled(true)
     }
     
     @ViewBuilder
@@ -281,6 +338,23 @@ struct SidebarTabRow: View {
     }
     
     // MARK: - Actions
+    
+    private func handleSplitViewAction() {
+        if isInSplitView {
+            pane.removeTabFromSplitView(tab.id)
+        } else {
+            // Si aucune vue fractionnée n'est active, créer avec l'onglet actuel + un onglet vide
+            if !pane.isSplitViewActive {
+                pane.addTab(urlString: "about:blank") // Créer un onglet vide
+                if let newTabID = pane.currentTab?.id {
+                    pane.enableSplitView(with: [tab.id, newTabID])
+                }
+            } else {
+                // Ajouter à la vue fractionnée existante
+                pane.addTabToSplitView(tab.id)
+            }
+        }
+    }
     
     private func copyURL() {
         if let url = tab.displayURL {
@@ -318,6 +392,11 @@ struct SidebarTabRow: View {
         let tabTitle = tab.title
         let tabCustomEmoji = tab.customEmojiIcon
         
+        // Retirer de la vue fractionnée si nécessaire
+        if isInSplitView {
+            pane.removeTabFromSplitView(tab.id)
+        }
+        
         if let index = pane.tabs.firstIndex(where: { $0.id == tab.id }) {
             pane.tabs.remove(at: index)
             
@@ -338,3 +417,4 @@ struct SidebarTabRow: View {
         }
     }
 }
+
