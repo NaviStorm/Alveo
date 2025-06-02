@@ -6,72 +6,6 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		BA19F6782DEAF9860074C881 /* TabButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA19F6772DEAF9810074C881 /* TabButton.swift */; };
-		BA19F6792DEAF9860074C881 /* TabButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA19F6772DEAF9810074C881 /* TabButton.swift */; };
-		BA19F67A2DEAF9860074C881 /* TabButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA19F6772DEAF9810074C881 /* TabButton.swift */; };
-		BA19F67C2DEB702E0074C881 /* SidebarTabRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA19F67B2DEB70290074C881 /* SidebarTabRow.swift */; };
-		BA19F67D2DEB702E0074C881 /* SidebarTabRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA19F67B2DEB70290074C881 /* SidebarTabRow.swift */; };
-		BA19F67E2DEB702E0074C881 /* SidebarTabRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA19F67B2DEB70290074C881 /* SidebarTabRow.swift */; };
-		BA19F6802DEC53320074C881 /* SplitWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA19F67F2DEC53320074C881 /* SplitWebView.swift */; };
-		BA19F6812DEC53320074C881 /* SplitWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA19F67F2DEC53320074C881 /* SplitWebView.swift */; };
-		BA19F6822DEC53320074C881 /* SplitWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA19F67F2DEC53320074C881 /* SplitWebView.swift */; };
-		BA43B2D32DE75902001CB722 /* PrincipalToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA43B2D22DE75902001CB722 /* PrincipalToolbarView.swift */; };
-		BA43B2D42DE75902001CB722 /* PrincipalToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA43B2D22DE75902001CB722 /* PrincipalToolbarView.swift */; };
-		BA43B2D52DE75902001CB722 /* PrincipalToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA43B2D22DE75902001CB722 /* PrincipalToolbarView.swift */; };
-		BA44C9632DE6EAF60028BC1C /* TabBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA44C9622DE6EAF60028BC1C /* TabBarView.swift */; };
-		BA44C9642DE6EAF60028BC1C /* TabBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA44C9622DE6EAF60028BC1C /* TabBarView.swift */; };
-		BA44C9652DE6EAF60028BC1C /* TabBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA44C9622DE6EAF60028BC1C /* TabBarView.swift */; };
-		BA44C9672DE6F0D60028BC1C /* WebViewHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA44C9662DE6F0D60028BC1C /* WebViewHelper.swift */; };
-		BA44C9682DE6F0D60028BC1C /* WebViewHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA44C9662DE6F0D60028BC1C /* WebViewHelper.swift */; };
-		BA44C9692DE6F0D60028BC1C /* WebViewHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA44C9662DE6F0D60028BC1C /* WebViewHelper.swift */; };
-		BA44C96B2DE6F6CD0028BC1C /* HistoryItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA44C96A2DE6F6CD0028BC1C /* HistoryItem.swift */; };
-		BA44C96C2DE6F6CD0028BC1C /* HistoryItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA44C96A2DE6F6CD0028BC1C /* HistoryItem.swift */; };
-		BA44C96D2DE6F6CD0028BC1C /* HistoryItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA44C96A2DE6F6CD0028BC1C /* HistoryItem.swift */; };
-		BA44C96F2DE70B560028BC1C /* ActiveAlveoPaneContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA44C96E2DE70B560028BC1C /* ActiveAlveoPaneContainerView.swift */; };
-		BA44C9702DE70B560028BC1C /* ActiveAlveoPaneContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA44C96E2DE70B560028BC1C /* ActiveAlveoPaneContainerView.swift */; };
-		BA44C9712DE70B560028BC1C /* ActiveAlveoPaneContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA44C96E2DE70B560028BC1C /* ActiveAlveoPaneContainerView.swift */; };
-		BA4F229B2DEAD2D500191932 /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA4F22992DEAD2D500191932 /* SidebarView.swift */; };
-		BA4F229C2DEAD2D500191932 /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA4F22992DEAD2D500191932 /* SidebarView.swift */; };
-		BA4F229D2DEAD2D500191932 /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA4F22992DEAD2D500191932 /* SidebarView.swift */; };
-		BA4F229F2DEAD39C00191932 /* NSColor+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA4F229E2DEAD39C00191932 /* NSColor+Extensions.swift */; };
-		BA4F22A02DEAD39C00191932 /* NSColor+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA4F229E2DEAD39C00191932 /* NSColor+Extensions.swift */; };
-		BA4F22A12DEAD39C00191932 /* NSColor+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA4F229E2DEAD39C00191932 /* NSColor+Extensions.swift */; };
-		BAAE99E92DE66E9C002B1014 /* View+NSCursor.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAAE99D82DE66E9C002B1014 /* View+NSCursor.swift */; };
-		BAAE99EB2DE66E9C002B1014 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAAE99E42DE66E9C002B1014 /* ContentView.swift */; };
-		BAAE99ED2DE66E9C002B1014 /* AlveoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAAE99E32DE66E9C002B1014 /* AlveoApp.swift */; };
-		BAAE99EE2DE66E9C002B1014 /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAAE99E52DE66E9C002B1014 /* Item.swift */; };
-		BAAE99EF2DE66E9C002B1014 /* AlveoPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAAE99D32DE66E9C002B1014 /* AlveoPane.swift */; };
-		BAAE99F12DE66E9C002B1014 /* AppStorageKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAAE99D62DE66E9C002B1014 /* AppStorageKeys.swift */; };
-		BAAE99F22DE66E9C002B1014 /* Tab.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAAE99D42DE66E9C002B1014 /* Tab.swift */; };
-		BAAE99F32DE66E9C002B1014 /* WebViewRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAAE99DD2DE66E9C002B1014 /* WebViewRepresentable.swift */; };
-		BAAE99F42DE66E9C002B1014 /* AlveoPaneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAAE99DA2DE66E9C002B1014 /* AlveoPaneView.swift */; };
-		BAAE99F52DE66E9C002B1014 /* UTType+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAAE99D72DE66E9C002B1014 /* UTType+Extensions.swift */; };
-		BAAE99F72DE66E9C002B1014 /* View+NSCursor.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAAE99D82DE66E9C002B1014 /* View+NSCursor.swift */; };
-		BAAE99F92DE66E9C002B1014 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAAE99E42DE66E9C002B1014 /* ContentView.swift */; };
-		BAAE99FB2DE66E9C002B1014 /* AlveoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAAE99E32DE66E9C002B1014 /* AlveoApp.swift */; };
-		BAAE99FC2DE66E9C002B1014 /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAAE99E52DE66E9C002B1014 /* Item.swift */; };
-		BAAE99FD2DE66E9C002B1014 /* AlveoPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAAE99D32DE66E9C002B1014 /* AlveoPane.swift */; };
-		BAAE99FF2DE66E9C002B1014 /* AppStorageKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAAE99D62DE66E9C002B1014 /* AppStorageKeys.swift */; };
-		BAAE9A002DE66E9C002B1014 /* Tab.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAAE99D42DE66E9C002B1014 /* Tab.swift */; };
-		BAAE9A012DE66E9C002B1014 /* WebViewRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAAE99DD2DE66E9C002B1014 /* WebViewRepresentable.swift */; };
-		BAAE9A022DE66E9C002B1014 /* AlveoPaneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAAE99DA2DE66E9C002B1014 /* AlveoPaneView.swift */; };
-		BAAE9A032DE66E9C002B1014 /* UTType+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAAE99D72DE66E9C002B1014 /* UTType+Extensions.swift */; };
-		BAAE9A062DE66E9C002B1014 /* View+NSCursor.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAAE99D82DE66E9C002B1014 /* View+NSCursor.swift */; };
-		BAAE9A082DE66E9C002B1014 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAAE99E42DE66E9C002B1014 /* ContentView.swift */; };
-		BAAE9A0A2DE66E9C002B1014 /* AlveoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAAE99E32DE66E9C002B1014 /* AlveoApp.swift */; };
-		BAAE9A0B2DE66E9C002B1014 /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAAE99E52DE66E9C002B1014 /* Item.swift */; };
-		BAAE9A0C2DE66E9C002B1014 /* AlveoPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAAE99D32DE66E9C002B1014 /* AlveoPane.swift */; };
-		BAAE9A0E2DE66E9C002B1014 /* AppStorageKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAAE99D62DE66E9C002B1014 /* AppStorageKeys.swift */; };
-		BAAE9A0F2DE66E9C002B1014 /* Tab.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAAE99D42DE66E9C002B1014 /* Tab.swift */; };
-		BAAE9A102DE66E9C002B1014 /* WebViewRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAAE99DD2DE66E9C002B1014 /* WebViewRepresentable.swift */; };
-		BAAE9A112DE66E9C002B1014 /* AlveoPaneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAAE99DA2DE66E9C002B1014 /* AlveoPaneView.swift */; };
-		BAAE9A122DE66E9C002B1014 /* UTType+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAAE99D72DE66E9C002B1014 /* UTType+Extensions.swift */; };
-		BAD0CF212DE76E4800B78C06 /* SuggestionsList.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAD0CF202DE76E4800B78C06 /* SuggestionsList.swift */; };
-		BAD0CF222DE76E4800B78C06 /* SuggestionsList.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAD0CF202DE76E4800B78C06 /* SuggestionsList.swift */; };
-		BAD0CF232DE76E4800B78C06 /* SuggestionsList.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAD0CF202DE76E4800B78C06 /* SuggestionsList.swift */; };
-/* End PBXBuildFile section */
-
 /* Begin PBXContainerItemProxy section */
 		BA01A2592DE62BE5001A8BF2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -93,30 +27,43 @@
 		BA01A2482DE62BE3001A8BF2 /* Alveo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Alveo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BA01A2582DE62BE5001A8BF2 /* AlveoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AlveoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BA01A2622DE62BE5001A8BF2 /* AlveoUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AlveoUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		BA19F6772DEAF9810074C881 /* TabButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabButton.swift; sourceTree = "<group>"; };
-		BA19F67B2DEB70290074C881 /* SidebarTabRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarTabRow.swift; sourceTree = "<group>"; };
-		BA19F67F2DEC53320074C881 /* SplitWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplitWebView.swift; sourceTree = "<group>"; };
-		BA43B2D22DE75902001CB722 /* PrincipalToolbarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrincipalToolbarView.swift; sourceTree = "<group>"; };
-		BA44C9622DE6EAF60028BC1C /* TabBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarView.swift; sourceTree = "<group>"; };
-		BA44C9662DE6F0D60028BC1C /* WebViewHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewHelper.swift; sourceTree = "<group>"; };
-		BA44C96A2DE6F6CD0028BC1C /* HistoryItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryItem.swift; sourceTree = "<group>"; };
-		BA44C96E2DE70B560028BC1C /* ActiveAlveoPaneContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveAlveoPaneContainerView.swift; sourceTree = "<group>"; };
-		BA4F22992DEAD2D500191932 /* SidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarView.swift; sourceTree = "<group>"; };
-		BA4F229E2DEAD39C00191932 /* NSColor+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSColor+Extensions.swift"; sourceTree = "<group>"; };
-		BAAE99D32DE66E9C002B1014 /* AlveoPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlveoPane.swift; sourceTree = "<group>"; };
-		BAAE99D42DE66E9C002B1014 /* Tab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tab.swift; sourceTree = "<group>"; };
-		BAAE99D62DE66E9C002B1014 /* AppStorageKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStorageKeys.swift; sourceTree = "<group>"; };
-		BAAE99D72DE66E9C002B1014 /* UTType+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UTType+Extensions.swift"; sourceTree = "<group>"; };
-		BAAE99D82DE66E9C002B1014 /* View+NSCursor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+NSCursor.swift"; sourceTree = "<group>"; };
-		BAAE99DA2DE66E9C002B1014 /* AlveoPaneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlveoPaneView.swift; sourceTree = "<group>"; };
-		BAAE99DD2DE66E9C002B1014 /* WebViewRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewRepresentable.swift; sourceTree = "<group>"; };
-		BAAE99E32DE66E9C002B1014 /* AlveoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlveoApp.swift; sourceTree = "<group>"; };
-		BAAE99E42DE66E9C002B1014 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		BAAE99E52DE66E9C002B1014 /* Item.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Item.swift; sourceTree = "<group>"; };
-		BAD0CF202DE76E4800B78C06 /* SuggestionsList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuggestionsList.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		BA2BB2032DEDFFAD00E7651B /* Exceptions for "Alveo" folder in "AlveoTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				AlveoApp.swift,
+				ContentView.swift,
+				Item.swift,
+				Models/AlveoPane.swift,
+				Models/HistoryItem.swift,
+				Models/Tab.swift,
+				Utils/AppStorageKeys.swift,
+				"Utils/NSColor+Extensions.swift",
+				"Utils/UTType+Extensions.swift",
+				"Utils/View+NSCursor.swift",
+				Utils/WebViewHelper.swift,
+			);
+			target = BA01A2572DE62BE5001A8BF2 /* AlveoTests */;
+		};
+		BA2BB2042DEDFFAD00E7651B /* Exceptions for "Alveo" folder in "AlveoUITests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				AlveoApp.swift,
+				ContentView.swift,
+				Item.swift,
+				Models/AlveoPane.swift,
+				Models/HistoryItem.swift,
+				Models/Tab.swift,
+				Utils/AppStorageKeys.swift,
+				"Utils/NSColor+Extensions.swift",
+				"Utils/UTType+Extensions.swift",
+				"Utils/View+NSCursor.swift",
+				Utils/WebViewHelper.swift,
+			);
+			target = BA01A2612DE62BE5001A8BF2 /* AlveoUITests */;
+		};
 		BAAE9A142DE6742B002B1014 /* Exceptions for "Alveo" folder in "Alveo" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -131,6 +78,8 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				BAAE9A142DE6742B002B1014 /* Exceptions for "Alveo" folder in "Alveo" target */,
+				BA2BB2032DEDFFAD00E7651B /* Exceptions for "Alveo" folder in "AlveoTests" target */,
+				BA2BB2042DEDFFAD00E7651B /* Exceptions for "Alveo" folder in "AlveoUITests" target */,
 			);
 			path = Alveo;
 			sourceTree = "<group>";
@@ -175,7 +124,6 @@
 		BA01A23F2DE62BE3001A8BF2 = {
 			isa = PBXGroup;
 			children = (
-				BAAE99E82DE66E9C002B1014 /* Sources */,
 				BA01A24A2DE62BE3001A8BF2 /* Alveo */,
 				BA01A25B2DE62BE5001A8BF2 /* AlveoTests */,
 				BA01A2652DE62BE5001A8BF2 /* AlveoUITests */,
@@ -191,106 +139,6 @@
 				BA01A2622DE62BE5001A8BF2 /* AlveoUITests.xctest */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		BA43B2CE2DE758B7001CB722 /* Toolbar */ = {
-			isa = PBXGroup;
-			children = (
-				BAD0CF202DE76E4800B78C06 /* SuggestionsList.swift */,
-				BA43B2D22DE75902001CB722 /* PrincipalToolbarView.swift */,
-			);
-			path = Toolbar;
-			sourceTree = "<group>";
-		};
-		BA4F229A2DEAD2D500191932 /* Sidebar */ = {
-			isa = PBXGroup;
-			children = (
-				BA19F67B2DEB70290074C881 /* SidebarTabRow.swift */,
-				BA4F22992DEAD2D500191932 /* SidebarView.swift */,
-			);
-			path = Sidebar;
-			sourceTree = "<group>";
-		};
-		BAAE99D52DE66E9C002B1014 /* Models */ = {
-			isa = PBXGroup;
-			children = (
-				BA44C96A2DE6F6CD0028BC1C /* HistoryItem.swift */,
-				BAAE99D32DE66E9C002B1014 /* AlveoPane.swift */,
-				BAAE99D42DE66E9C002B1014 /* Tab.swift */,
-			);
-			path = Models;
-			sourceTree = "<group>";
-		};
-		BAAE99D92DE66E9C002B1014 /* Utils */ = {
-			isa = PBXGroup;
-			children = (
-				BA4F229E2DEAD39C00191932 /* NSColor+Extensions.swift */,
-				BA44C9662DE6F0D60028BC1C /* WebViewHelper.swift */,
-				BAAE99D62DE66E9C002B1014 /* AppStorageKeys.swift */,
-				BAAE99D72DE66E9C002B1014 /* UTType+Extensions.swift */,
-				BAAE99D82DE66E9C002B1014 /* View+NSCursor.swift */,
-			);
-			path = Utils;
-			sourceTree = "<group>";
-		};
-		BAAE99DC2DE66E9C002B1014 /* Panes */ = {
-			isa = PBXGroup;
-			children = (
-				BA44C96E2DE70B560028BC1C /* ActiveAlveoPaneContainerView.swift */,
-				BAAE99DA2DE66E9C002B1014 /* AlveoPaneView.swift */,
-			);
-			path = Panes;
-			sourceTree = "<group>";
-		};
-		BAAE99DE2DE66E9C002B1014 /* Shared */ = {
-			isa = PBXGroup;
-			children = (
-				BA19F67F2DEC53320074C881 /* SplitWebView.swift */,
-				BA19F6772DEAF9810074C881 /* TabButton.swift */,
-				BAAE99DD2DE66E9C002B1014 /* WebViewRepresentable.swift */,
-			);
-			path = Shared;
-			sourceTree = "<group>";
-		};
-		BAAE99E12DE66E9C002B1014 /* Tabs */ = {
-			isa = PBXGroup;
-			children = (
-				BA44C9622DE6EAF60028BC1C /* TabBarView.swift */,
-			);
-			path = Tabs;
-			sourceTree = "<group>";
-		};
-		BAAE99E22DE66E9C002B1014 /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				BA4F229A2DEAD2D500191932 /* Sidebar */,
-				BA43B2CE2DE758B7001CB722 /* Toolbar */,
-				BAAE99DC2DE66E9C002B1014 /* Panes */,
-				BAAE99DE2DE66E9C002B1014 /* Shared */,
-				BAAE99E12DE66E9C002B1014 /* Tabs */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
-		BAAE99E62DE66E9C002B1014 /* Alveo */ = {
-			isa = PBXGroup;
-			children = (
-				BAAE99D52DE66E9C002B1014 /* Models */,
-				BAAE99D92DE66E9C002B1014 /* Utils */,
-				BAAE99E22DE66E9C002B1014 /* Views */,
-				BAAE99E32DE66E9C002B1014 /* AlveoApp.swift */,
-				BAAE99E42DE66E9C002B1014 /* ContentView.swift */,
-				BAAE99E52DE66E9C002B1014 /* Item.swift */,
-			);
-			path = Alveo;
-			sourceTree = "<group>";
-		};
-		BAAE99E82DE66E9C002B1014 /* Sources */ = {
-			isa = PBXGroup;
-			children = (
-				BAAE99E62DE66E9C002B1014 /* Alveo */,
-			);
-			path = Sources;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -437,27 +285,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BAAE9A062DE66E9C002B1014 /* View+NSCursor.swift in Sources */,
-				BA44C9652DE6EAF60028BC1C /* TabBarView.swift in Sources */,
-				BA4F22A02DEAD39C00191932 /* NSColor+Extensions.swift in Sources */,
-				BAAE9A082DE66E9C002B1014 /* ContentView.swift in Sources */,
-				BAAE9A0A2DE66E9C002B1014 /* AlveoApp.swift in Sources */,
-				BAAE9A0B2DE66E9C002B1014 /* Item.swift in Sources */,
-				BA43B2D52DE75902001CB722 /* PrincipalToolbarView.swift in Sources */,
-				BAAE9A0C2DE66E9C002B1014 /* AlveoPane.swift in Sources */,
-				BAD0CF222DE76E4800B78C06 /* SuggestionsList.swift in Sources */,
-				BA44C9702DE70B560028BC1C /* ActiveAlveoPaneContainerView.swift in Sources */,
-				BAAE9A0E2DE66E9C002B1014 /* AppStorageKeys.swift in Sources */,
-				BA19F67E2DEB702E0074C881 /* SidebarTabRow.swift in Sources */,
-				BA44C9672DE6F0D60028BC1C /* WebViewHelper.swift in Sources */,
-				BA19F6782DEAF9860074C881 /* TabButton.swift in Sources */,
-				BA44C96B2DE6F6CD0028BC1C /* HistoryItem.swift in Sources */,
-				BAAE9A0F2DE66E9C002B1014 /* Tab.swift in Sources */,
-				BAAE9A102DE66E9C002B1014 /* WebViewRepresentable.swift in Sources */,
-				BA4F229B2DEAD2D500191932 /* SidebarView.swift in Sources */,
-				BAAE9A112DE66E9C002B1014 /* AlveoPaneView.swift in Sources */,
-				BA19F6802DEC53320074C881 /* SplitWebView.swift in Sources */,
-				BAAE9A122DE66E9C002B1014 /* UTType+Extensions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -465,27 +292,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BAAE99F72DE66E9C002B1014 /* View+NSCursor.swift in Sources */,
-				BA44C96F2DE70B560028BC1C /* ActiveAlveoPaneContainerView.swift in Sources */,
-				BA44C9632DE6EAF60028BC1C /* TabBarView.swift in Sources */,
-				BAAE99F92DE66E9C002B1014 /* ContentView.swift in Sources */,
-				BAAE99FB2DE66E9C002B1014 /* AlveoApp.swift in Sources */,
-				BA4F229D2DEAD2D500191932 /* SidebarView.swift in Sources */,
-				BAAE99FC2DE66E9C002B1014 /* Item.swift in Sources */,
-				BAAE99FD2DE66E9C002B1014 /* AlveoPane.swift in Sources */,
-				BA19F6822DEC53320074C881 /* SplitWebView.swift in Sources */,
-				BA44C96C2DE6F6CD0028BC1C /* HistoryItem.swift in Sources */,
-				BAAE99FF2DE66E9C002B1014 /* AppStorageKeys.swift in Sources */,
-				BAAE9A002DE66E9C002B1014 /* Tab.swift in Sources */,
-				BA19F67D2DEB702E0074C881 /* SidebarTabRow.swift in Sources */,
-				BAAE9A012DE66E9C002B1014 /* WebViewRepresentable.swift in Sources */,
-				BA4F22A12DEAD39C00191932 /* NSColor+Extensions.swift in Sources */,
-				BA19F6792DEAF9860074C881 /* TabButton.swift in Sources */,
-				BA44C9682DE6F0D60028BC1C /* WebViewHelper.swift in Sources */,
-				BAAE9A022DE66E9C002B1014 /* AlveoPaneView.swift in Sources */,
-				BAAE9A032DE66E9C002B1014 /* UTType+Extensions.swift in Sources */,
-				BA43B2D32DE75902001CB722 /* PrincipalToolbarView.swift in Sources */,
-				BAD0CF232DE76E4800B78C06 /* SuggestionsList.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -493,27 +299,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BAAE99E92DE66E9C002B1014 /* View+NSCursor.swift in Sources */,
-				BAAE99EB2DE66E9C002B1014 /* ContentView.swift in Sources */,
-				BA4F229F2DEAD39C00191932 /* NSColor+Extensions.swift in Sources */,
-				BA4F229C2DEAD2D500191932 /* SidebarView.swift in Sources */,
-				BA44C9692DE6F0D60028BC1C /* WebViewHelper.swift in Sources */,
-				BAAE99ED2DE66E9C002B1014 /* AlveoApp.swift in Sources */,
-				BA19F67A2DEAF9860074C881 /* TabButton.swift in Sources */,
-				BAAE99EE2DE66E9C002B1014 /* Item.swift in Sources */,
-				BA43B2D42DE75902001CB722 /* PrincipalToolbarView.swift in Sources */,
-				BAAE99EF2DE66E9C002B1014 /* AlveoPane.swift in Sources */,
-				BA19F6812DEC53320074C881 /* SplitWebView.swift in Sources */,
-				BAAE99F12DE66E9C002B1014 /* AppStorageKeys.swift in Sources */,
-				BAAE99F22DE66E9C002B1014 /* Tab.swift in Sources */,
-				BAD0CF212DE76E4800B78C06 /* SuggestionsList.swift in Sources */,
-				BA19F67C2DEB702E0074C881 /* SidebarTabRow.swift in Sources */,
-				BA44C9712DE70B560028BC1C /* ActiveAlveoPaneContainerView.swift in Sources */,
-				BAAE99F32DE66E9C002B1014 /* WebViewRepresentable.swift in Sources */,
-				BAAE99F42DE66E9C002B1014 /* AlveoPaneView.swift in Sources */,
-				BA44C96D2DE6F6CD0028BC1C /* HistoryItem.swift in Sources */,
-				BA44C9642DE6EAF60028BC1C /* TabBarView.swift in Sources */,
-				BAAE99F52DE66E9C002B1014 /* UTType+Extensions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
