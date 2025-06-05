@@ -71,7 +71,7 @@ final class AlveoPane {
         if let index = splitViewTabIDs.firstIndex(of: tab.id) {
             splitViewTabIDs.remove(at: index)
             if splitViewProportions.count > index {
-                splitViewProportions.remove(at: index)
+                splitViewProportions.remove(at: index) // Correction ici
             }
             // Si c'était le dernier onglet en vue fractionnée, désactiver
             if splitViewTabIDs.isEmpty {
@@ -157,16 +157,33 @@ final class AlveoPane {
         }
     }
     
-    private func redistributeSplitViewProportions() {
-        guard !splitViewTabIDs.isEmpty else { return }
-        
+    func redistributeSplitViewProportions() {
+        guard !splitViewTabIDs.isEmpty else {
+            splitViewProportions = [] // Vide si pas d'onglets en split
+            return
+        }
         let proportion = 1.0 / Double(splitViewTabIDs.count)
         splitViewProportions = Array(repeating: proportion, count: splitViewTabIDs.count)
+        print("[AlveoPane] Proportions redistribuées: \(splitViewProportions)")
     }
     
-    func updateSplitViewProportions(_ proportions: [Double]) {
-        guard proportions.count == splitViewTabIDs.count else { return }
-        splitViewProportions = proportions
+    func updateSplitViewProportions(_ newProportions: [Double]) {
+        guard newProportions.count == splitViewTabIDs.count else {
+            print("[AlveoPane updateSplitViewProportions] ERREUR: Nombre de proportions (\(newProportions.count)) ne correspond pas au nombre d'onglets en vue fractionnée (\(splitViewTabIDs.count)).")
+            // Optionnel: redistribuer si invalide
+            // redistributeSplitViewProportions()
+            return
+        }
+        // Vérifier que les proportions sont valides (toutes >= 0 et somme approx 1.0)
+        let sum = newProportions.reduce(0, +)
+        if newProportions.allSatisfy({ $0 >= -0.00001 }) && abs(sum - 1.0) < 0.001 { // Tolérance pour les erreurs de flottants
+            splitViewProportions = newProportions
+        } else {
+            print("[AlveoPane updateSplitViewProportions] Tentative de mettre à jour avec des proportions invalides: \(newProportions). Somme: \(sum). Redistribution.")
+            // Si les proportions fournies sont mauvaises, redistribuer équitablement.
+            redistributeSplitViewProportions()
+        }
     }
+    
 }
 

@@ -167,6 +167,9 @@ struct SidebarView: View {
         if pane.isSplitViewActive {
             // Ajouter l'onglet à la vue fractionnée existante
             pane.addTabToSplitView(tab.id)
+            if let newTabID = pane.currentTab?.id { // Après pane.addTab(...)
+                pane.enableSplitView(with: [tab.id, newTabID]) // Correction ici
+            }
         } else {
             // Créer une nouvelle vue fractionnée avec l'onglet actuel + un onglet vide
             pane.addTab(urlString: "about:blank")
@@ -177,11 +180,15 @@ struct SidebarView: View {
     }
     
     private func enableSplitViewWithSelectedTabs() {
-        guard selectedTabIDs.count > 1 else { return }
-        
+        guard selectedTabIDs.count > 1 else { return } // Minimum 2 onglets pour une vue fractionnée pertinente
         let tabIDsArray = Array(selectedTabIDs)
         pane.enableSplitView(with: tabIDsArray)
-        selectedTabIDs.removeAll()
+        // Optionnel: définir l'onglet actif sur le premier de la sélection
+        if let firstSelectedTabID = tabIDsArray.first {
+            pane.currentTabID = firstSelectedTabID
+        }
+        selectedTabIDs.removeAll() // Effacer la sélection après l'action
+        print("[SidebarView] Vue fractionnée activée avec les onglets sélectionnés: \(tabIDsArray)")
     }
 
     private func handleCloseTabInSidebar(tabToClose: Tab, currentPane: AlveoPane) {
