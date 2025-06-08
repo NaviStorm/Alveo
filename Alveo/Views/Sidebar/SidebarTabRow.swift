@@ -265,6 +265,19 @@ struct SidebarTabRow: View {
         renameButton
         Divider()
         splitViewButton
+        
+        // ✅ Option spécifique si plusieurs onglets sont sélectionnés
+        if pane.selectedTabIDs.count > 1 && pane.selectedTabIDs.contains(tab.id) {
+            Button("Vue fractionnée avec sélection (\(pane.selectedTabIDs.count) onglets)") {
+                // Déléguer à SidebarView
+                NotificationCenter.default.post(
+                    name: .enableSplitViewWithSelection,
+                    object: pane.id
+                )
+            }
+            .keyboardShortcut("d", modifiers: [.command, .shift])
+        }
+        
         duplicateButton
         if allPanes.count > 1 {
             moveToMenu

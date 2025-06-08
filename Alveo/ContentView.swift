@@ -603,25 +603,37 @@ struct ContentView: View {
 
     private func enableSplitViewFromMenu() {
         guard let activePane = currentActiveAlveoPaneObject else { return }
+        
+        // ✅ Si plusieurs onglets sont sélectionnés, les utiliser pour la vue fractionnée
+        if activePane.selectedTabIDs.count > 1 {
+            let tabIDsArray = Array(activePane.selectedTabIDs)
+            activePane.enableSplitView(with: tabIDsArray)
+            
+            // Définir le premier comme actif
+            if let firstSelectedTabID = tabIDsArray.first {
+                activePane.currentTabID = firstSelectedTabID
+            }
+            
+            // Vider la sélection
+            activePane.selectedTabIDs.removeAll()
+            
+            print("[ContentView] Vue fractionnée activée via menu avec \(tabIDsArray.count) onglets sélectionnés")
+            return
+        }
+        
+        // ✅ Comportement existant si un seul onglet ou aucune sélection
         if !activePane.isSplitViewActive {
             if let currentTabID = activePane.currentTabID {
-                let originalTab = activePane.tabs.first(where: {$0.id == currentTabID})
-                
                 // Ajouter un nouvel onglet vide à côté
-                activePane.addTab(urlString: "about:blank") // Cela va définir currentTabID sur le nouvel onglet
+                activePane.addTab(urlString: "about:blank")
                 if let newBlankTabID = activePane.currentTabID, newBlankTabID != currentTabID {
-                     activePane.enableSplitView(with: [currentTabID, newBlankTabID])
-                     // Rétablir l'onglet original comme onglet actif pour la vue fractionnée (ou le nouveau, selon préférence)
-                     activePane.currentTabID = currentTabID // Ou newBlankTabID
-                } else {
-                    // Si addTab n'a pas changé currentTabID (par ex. si c'était le seul onglet),
-                    // il faut trouver l'ID du nouvel onglet.
-                    // C'est une situation anormale si addTab ne met pas à jour currentTabID.
-                    print("Erreur: Impossible de récupérer l'ID du nouvel onglet pour la vue fractionnée.")
+                    activePane.enableSplitView(with: [currentTabID, newBlankTabID])
+                    activePane.currentTabID = currentTabID
                 }
             }
         }
     }
+    
 
     private func disableSplitViewFromMenu() {
         guard let activePane = currentActiveAlveoPaneObject else { return }

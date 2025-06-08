@@ -1,3 +1,4 @@
+Alveo/Views/Sidebar/SidebarView.swift
 import SwiftUI
 import SwiftData
 
@@ -16,6 +17,11 @@ struct SidebarView: View {
             sidebarHeader
             Divider()
             tabsList
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .enableSplitViewWithSelection)) { notification in
+            if let paneID = notification.object as? UUID, paneID == pane.id {
+                enableSplitViewWithSelectedTabs()
+            }
         }
     }
     
@@ -89,6 +95,17 @@ struct SidebarView: View {
         List(selection: $pane.selectedTabIDs) {
             ForEach(pane.tabs) { tab in
                 tabListItemView(for: tab)
+            }
+        }
+        .contextMenu {
+            // Menu contextuel existant...
+            
+            // ✅ Nouvelle option pour vue fractionnée avec sélection multiple
+            if pane.selectedTabIDs.count > 1 {
+                Divider()
+                Button("Vue fractionnée avec les \(pane.selectedTabIDs.count) onglets sélectionnés") {
+                    enableSplitViewWithSelectedTabs()
+                }
             }
         }
         .onChange(of: pane.selectedTabIDs) { oldSelection, newSelection in
@@ -222,15 +239,26 @@ struct SidebarView: View {
     }
     
     private func enableSplitViewWithSelectedTabs() {
-        guard selectedTabIDs.count > 1 else { return } // Minimum 2 onglets pour une vue fractionnée pertinente
-        let tabIDsArray = Array(selectedTabIDs)
+        guard pane.selectedTabIDs.count > 1 else {
+            print("[SidebarView] Pas assez d'onglets sélectionnés pour une vue fractionnée")
+            return
+        }
+        
+        let tabIDsArray = Array(pane.selectedTabIDs)
+        print("[SidebarView] Activation de la vue fractionnée avec \(tabIDsArray.count) onglets: \(tabIDsArray)")
+        
+        // Activer la vue fractionnée avec tous les onglets sélectionnés
         pane.enableSplitView(with: tabIDsArray)
-        // Optionnel: définir l'onglet actif sur le premier de la sélection
+        
+        // Définir le premier onglet sélectionné comme actif
         if let firstSelectedTabID = tabIDsArray.first {
             pane.currentTabID = firstSelectedTabID
         }
-        selectedTabIDs.removeAll() // Effacer la sélection après l'action
-        print("[SidebarView] Vue fractionnée activée avec les onglets sélectionnés: \(tabIDsArray)")
+        
+        // Vider la sélection après l'action
+        pane.selectedTabIDs.removeAll()
+        
+        print("[SidebarView] Vue fractionnée activée avec les onglets sélectionnés")
     }
 
     private func handleCloseTabInSidebar(tabToClose: Tab, currentPane: AlveoPane) {

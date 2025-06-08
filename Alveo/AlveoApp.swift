@@ -61,4 +61,6 @@ extension Notification.Name {
     static let closeTabOrWindowFromMenu = Notification.Name("closeTabOrWindowFromMenuNotification")
     static let enableSplitViewFromMenu = Notification.Name("enableSplitViewFromMenuNotification")
     static let disableSplitViewFromMenu = Notification.Name("disableSplitViewFromMenuNotification")
+    // ✅ Nouvelle notification
+    static let enableSplitViewWithSelection = Notification.Name("enableSplitViewWithSelectionNotification")
 }

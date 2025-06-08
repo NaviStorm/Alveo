@@ -11,23 +11,24 @@ struct ActiveAlveoPaneContainerView: View {
     
     @Binding var globalURLInput: String
     @Environment(\.modelContext) private var modelContext
-
+    
     // Helper pour l'onglet actuellement actif dans ce pane (pour la vue unique)
     private var webViewHelperForCurrentActiveTabInPane: WebViewHelper? {
         guard let currentTabID = pane.currentTabID else { return nil }
         return tabWebViewHelpers[currentTabID]
     }
-
+    
     var body: some View {
         let isInSplitView = pane.isSplitViewActive
-        let currentTabIsInSplit = pane.splitViewTabIDs.contains(pane.currentTabID ?? UUID())
-
+        // ❌ Supprimer cette condition restrictive
+        // let currentTabIsInSplit = pane.splitViewTabIDs.contains(pane.currentTabID ?? UUID())
+        
         VStack(spacing: 0) {
-            if isInSplitView && currentTabIsInSplit {
-//            if pane.isSplitViewActive && !pane.splitViewTabs.isEmpty {
+            // ✅ Simplifier la condition
+            if isInSplitView && !pane.splitViewTabs.isEmpty {
                 SplitWebView(
                     pane: pane,
-                    tabWebViewHelpers: tabWebViewHelpers, // Passer tout le dictionnaire
+                    tabWebViewHelpers: tabWebViewHelpers,
                     globalURLInput: $globalURLInput
                 )
             } else {
@@ -35,25 +36,21 @@ struct ActiveAlveoPaneContainerView: View {
                 if let helper = webViewHelperForCurrentActiveTabInPane {
                     AlveoPaneView(
                         pane: pane,
-                        webViewHelper: helper, // Passer le helper spécifique de l'onglet actif
+                        webViewHelper: helper,
                         globalURLInput: $globalURLInput
                     )
                 } else if pane.currentTabID != nil && webViewHelperForCurrentActiveTabInPane == nil {
-                    // Cas où currentTabID est défini mais son helper n'est pas (encore) là.
-                    // Cela peut arriver brièvement pendant les transitions.
-                    // ContentView.ensureWebViewHelperExists devrait le créer.
                     ProgressView()
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .onAppear {
                             print("[ActiveAlveoPaneContainerView] Helper manquant pour tab \(pane.currentTabID!), pane \(pane.id). Devrait être créé par ContentView.")
                         }
                 } else if pane.tabs.isEmpty {
-                     Text("Cet espace n'a aucun onglet.\nAjoutez-en un.")
+                    Text("Cet espace n'a aucun onglet.\nAjoutez-en un.")
                         .font(.title2).multilineTextAlignment(.center).foregroundColor(.secondary)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
-                }
-                 else {
-                    Text("Aucun onglet sélectionné.") // currentTabID est nil mais il y a des onglets.
+                } else {
+                    Text("Aucun onglet sélectionné.")
                         .font(.title2).multilineTextAlignment(.center).foregroundColor(.secondary)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }

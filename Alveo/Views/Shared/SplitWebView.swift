@@ -21,21 +21,10 @@ struct SplitWebView: View {
                     if let webViewHelperForTab = tabWebViewHelpers[tab.id] {
                         VStack(spacing: 0) {
                             // En-tête optionnel pour chaque panneau de la vue fractionnée
-                            // tabHeader(for: tab, isActive: tab.id == pane.currentTabID, webViewHelper: webViewHelperForTab)
+                            tabHeader(for: tab, isActive: tab.id == pane.currentTabID, webViewHelper: webViewHelperForTab)
 
                             WebViewRepresentable(webView: webViewHelperForTab.webView)
                                 .id(tab.id) // S'assurer que la vue est unique par onglet
-                                .overlay(
-                                    Color.clear // Pour intercepter les clics
-                                        .contentShape(Rectangle())
-                                        .onTapGesture {
-                                            if pane.currentTabID != tab.id {
-                                                print("[SplitWebView] Clic pour activer TabID: \(tab.id)")
-                                                pane.currentTabID = tab.id // Déclenche la mise à jour globale dans ContentView
-                                                // globalURLInput = tab.urlString // Fait par ContentView via .onChange
-                                            }
-                                        }
-                                )
                                 .overlay( // Bordure pour l'onglet actif dans la SplitView
                                     Rectangle()
                                         .stroke(Color.accentColor.opacity(tab.id == pane.currentTabID ? 1.0 : 0.0), lineWidth: 2)
