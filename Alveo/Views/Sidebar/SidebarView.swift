@@ -44,30 +44,67 @@ struct SidebarView: View {
         .buttonStyle(.borderless)
         .padding(.trailing, 12)
     }
-    
+
     @ViewBuilder
-    private var tabsList: some View {
-        List(selection: $pane.currentTabID) {
-            // Grouper les onglets en vue fractionnée sur la même ligne
-            if pane.isSplitViewActive {
-                splitViewTabsRow
+    private func tabListItemView(for tab: Tab) -> some View {
+        SidebarTabRow(
+            tab: tab,
+            pane: pane, // Pass the current pane
+            allPanes: allAlveoPanes, // Pass the list of all panes
+            isSelected: tab.id == pane.currentTabID || pane.selectedTabIDs.contains(tab.id),
+            onSelect: {
+                handleTabSelection(tab) // Use existing handler
+            },
+            onClose: {
+                handleTabClose(tab) // Use existing handler
+            },
+            onToggleSplitView: {
+                handleToggleSplitView(tab) // Use existing handler
             }
-            
-            // Onglets normaux (non fractionnés)
-            ForEach(pane.tabsForDisplay.filter { !pane.splitViewTabIDs.contains($0.id) }) { tab in
-                createTabRow(for: tab)
-                    .tag(tab.id)
-            }
-        }
-        .listStyle(.sidebar)
+        )
+        .tag(tab.id) // Tag for List selection
         .contextMenu {
-            if selectedTabIDs.count > 1 {
-                Button("Vue fractionnée") {
-                    enableSplitViewWithSelectedTabs()
+            Button("Fermer l’onglet") {
+                // Corrected call to removeTab with the 'tab:' label
+                pane.removeTab(tab: tab)
+                pane.selectedTabIDs.remove(tab.id)
+            }
+
+            if pane.selectedTabIDs.count > 1 {
+                Button("Fermer les \(pane.selectedTabIDs.count) onglets sélectionnés") {
+                    for id in pane.selectedTabIDs {
+                        if let t = pane.tabs.first(where: { $0.id == id }) {
+                            // Corrected call to removeTab with the 'tab:' label
+                            pane.removeTab(tab: t)
+                        }
+                    }
+                    pane.selectedTabIDs.removeAll()
                 }
             }
         }
     }
+
+    @ViewBuilder
+    private var tabsList: some View {
+        List(selection: $pane.selectedTabIDs) {
+            ForEach(pane.tabs) { tab in
+                tabListItemView(for: tab)
+            }
+        }
+        .onChange(of: pane.selectedTabIDs) { oldSelection, newSelection in
+            print("[SidebarView] Sélection changée: \(oldSelection) -> \(newSelection)")
+            
+            // Si un seul onglet est sélectionné, le définir comme actif
+            if newSelection.count == 1, let singleSelectedID = newSelection.first {
+                if pane.currentTabID != singleSelectedID {
+                    pane.currentTabID = singleSelectedID
+                }
+            }
+            // Si plusieurs onglets sont sélectionnés, garder l'onglet actif actuel
+            // Si aucun onglet n'est sélectionné, ne pas changer l'onglet actif
+        }
+    }
+    
     
     @ViewBuilder
     private var splitViewTabsRow: some View {
@@ -137,19 +174,20 @@ struct SidebarView: View {
     }
     
     // MARK: - Actions
-    
     private func handleTabSelection(_ tab: Tab) {
         print(">>> [SidebarTabRow onSelect] Clic sur onglet: '\(tab.displayTitle)', ID: \(tab.id)")
         
         // Gestion de la sélection multiple avec Cmd
         if NSEvent.modifierFlags.contains(.command) {
-            if selectedTabIDs.contains(tab.id) {
-                selectedTabIDs.remove(tab.id)
+            if pane.selectedTabIDs.contains(tab.id) {
+                pane.selectedTabIDs.remove(tab.id)
             } else {
-                selectedTabIDs.insert(tab.id)
+                pane.selectedTabIDs.insert(tab.id)
             }
         } else {
-            selectedTabIDs = [tab.id]
+            // ✅ Sélection simple : effacer la sélection multiple et définir l'onglet actif
+            pane.selectedTabIDs.removeAll() // Vider la sélection multiple
+            pane.selectedTabIDs.insert(tab.id) // Ajouter seulement l'onglet sélectionné
             if pane.currentTabID != tab.id {
                 pane.currentTabID = tab.id
             }
@@ -160,6 +198,10 @@ struct SidebarView: View {
     
     private func handleTabClose(_ tab: Tab) {
         print("[SidebarView] Fermeture de l'onglet: '\(tab.displayTitle)'")
+        
+        // ✅ Retirer de la sélection multiple
+        pane.selectedTabIDs.remove(tab.id)
+        
         handleCloseTabInSidebar(tabToClose: tab, currentPane: pane)
     }
     

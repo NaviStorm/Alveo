@@ -40,9 +40,13 @@ struct SidebarTabRow: View {
         .padding(.horizontal, 8)
         .background(tabBackground)
         .overlay(
-            // Liseret bleu pour l'onglet actif
+            // Bordure pour l'onglet actif (plus épaisse)
             RoundedRectangle(cornerRadius: 6, style: .continuous)
-                .stroke(Color.accentColor, lineWidth: isSelected ? 2 : 0)
+                .stroke(
+                    tab.id == pane.currentTabID ? Color.accentColor :
+                    (pane.selectedTabIDs.contains(tab.id) ? Color.accentColor.opacity(0.6) : Color.clear),
+                    lineWidth: tab.id == pane.currentTabID ? 2 : 1
+                )
         )
         .contentShape(Rectangle())
         .onTapGesture { event in
@@ -131,7 +135,24 @@ struct SidebarTabRow: View {
         if isRenaming {
             renamingField
         } else {
-            tabInfo
+            HStack {
+                tabInfo
+                
+                Spacer()
+                
+                // ✅ Indicateurs visuels
+                if tab.id == pane.currentTabID {
+                    // Indicateur pour l'onglet actif
+                    Circle()
+                        .fill(Color.accentColor)
+                        .frame(width: 6, height: 6)
+                } else if pane.selectedTabIDs.contains(tab.id) {
+                    // Indicateur pour la sélection multiple
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(Color.accentColor.opacity(0.7))
+                        .frame(width: 8, height: 8)
+                }
+            }
         }
     }
     
@@ -220,7 +241,12 @@ struct SidebarTabRow: View {
             if isInSplitView {
                 RoundedRectangle(cornerRadius: 6, style: .continuous)
                     .fill(Color.accentColor.opacity(0.1))
-            } else if isSelected {
+            } else if tab.id == pane.currentTabID {
+                // ✅ Onglet actif - surbrillance forte
+                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    .fill(Color.accentColor.opacity(0.25))
+            } else if pane.selectedTabIDs.contains(tab.id) {
+                // ✅ Onglet sélectionné (mais pas actif) - surbrillance plus légère
                 RoundedRectangle(cornerRadius: 6, style: .continuous)
                     .fill(Color.accentColor.opacity(0.15))
             } else if isHovering {
@@ -229,6 +255,7 @@ struct SidebarTabRow: View {
             }
         }
     }
+    
     
     @ViewBuilder
     private var contextMenuContent: some View {

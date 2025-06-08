@@ -7,7 +7,8 @@ struct ActiveAlveoPaneContainerView: View {
     @Bindable var pane: AlveoPane
     // ANCIEN: @ObservedObject var webViewHelper: WebViewHelper
     let tabWebViewHelpers: [UUID: WebViewHelper] // Dictionnaire de tous les helpers par Tab.ID
-
+    
+    
     @Binding var globalURLInput: String
     @Environment(\.modelContext) private var modelContext
 
@@ -18,8 +19,12 @@ struct ActiveAlveoPaneContainerView: View {
     }
 
     var body: some View {
+        let isInSplitView = pane.isSplitViewActive
+        let currentTabIsInSplit = pane.splitViewTabIDs.contains(pane.currentTabID ?? UUID())
+
         VStack(spacing: 0) {
-            if pane.isSplitViewActive && !pane.splitViewTabs.isEmpty {
+            if isInSplitView && currentTabIsInSplit {
+//            if pane.isSplitViewActive && !pane.splitViewTabs.isEmpty {
                 SplitWebView(
                     pane: pane,
                     tabWebViewHelpers: tabWebViewHelpers, // Passer tout le dictionnaire

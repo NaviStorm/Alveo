@@ -14,6 +14,8 @@ final class AlveoPane {
     var isSplitViewActive: Bool = false
     var splitViewProportions: [Double] = [] // Proportions de largeur pour chaque onglet
     
+    @Transient var selectedTabIDs: Set<UUID> = []
+
     @Relationship(deleteRule: .cascade, inverse: \Tab.pane)
     var tabs: [Tab] = []
 
