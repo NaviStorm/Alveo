@@ -48,6 +48,15 @@ struct SidebarTabRow: View {
                     lineWidth: tab.id == pane.currentTabID ? 2 : 1
                 )
         )
+        .overlay(
+            // Indicateur Option pressé
+            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                .stroke(
+                    isOptionKeyPressed ? Color.orange : Color.clear,
+                    lineWidth: isOptionKeyPressed ? 2 : 0
+                )
+                .opacity(isOptionKeyPressed && isHovering ? 1.0 : 0.0)
+        )
         .contentShape(Rectangle())
         .onTapGesture { event in
             handleTapGesture(event: event)
@@ -76,13 +85,38 @@ struct SidebarTabRow: View {
         if !isRenaming {
             // Vérifier si Option est pressé pour basculer en vue fractionnée
             if NSEvent.modifierFlags.contains(.option) {
-                onToggleSplitView()
+                handleOptionClickSplitView()
             } else {
                 onSelect()
             }
         }
     }
     
+    // Nouvelle méthode pour gérer le clic Option
+    private func handleOptionClickSplitView() {
+        if !pane.isSplitViewActive {
+            // Créer une nouvelle vue fractionnée avec l'onglet actuel + cet onglet
+            if let currentTabID = pane.currentTabID, currentTabID != tab.id {
+                // Activer la vue fractionnée avec l'onglet actuel et celui cliqué
+                pane.enableSplitView(with: [currentTabID, tab.id])
+            } else {
+                // Si c'est le même onglet ou pas d'onglet actuel, créer un nouvel onglet vide
+                pane.addTab(urlString: "about:blank")
+                if let newTabID = pane.currentTab?.id {
+                    pane.enableSplitView(with: [tab.id, newTabID])
+                }
+            }
+        } else {
+            // Vue fractionnée déjà active, ajouter cet onglet
+            if !pane.splitViewTabIDs.contains(tab.id) {
+                pane.addTabToSplitView(tab.id)
+            } else {
+                // Si déjà dans la vue fractionnée, le retirer
+                pane.removeTabFromSplitView(tab.id)
+            }
+        }
+    }
+
     // MARK: - Sous-vues décomposées
     
     @ViewBuilder
@@ -378,16 +412,21 @@ struct SidebarTabRow: View {
     }
     
     // MARK: - Actions
-    
     private func handleSplitViewAction() {
         if isInSplitView {
             pane.removeTabFromSplitView(tab.id)
         } else {
-            // Si aucune vue fractionnée n'est active, créer avec l'onglet actuel + un onglet vide
+            // Si aucune vue fractionnée n'est active, créer avec l'onglet actuel + cet onglet
             if !pane.isSplitViewActive {
-                pane.addTab(urlString: "about:blank") // Créer un onglet vide
-                if let newTabID = pane.currentTab?.id {
-                    pane.enableSplitView(with: [tab.id, newTabID])
+                if let currentTabID = pane.currentTabID, currentTabID != tab.id {
+                    // Utiliser l'onglet actuel + celui-ci
+                    pane.enableSplitView(with: [currentTabID, tab.id])
+                } else {
+                    // Créer un onglet vide + celui-ci
+                    pane.addTab(urlString: "about:blank")
+                    if let newTabID = pane.currentTab?.id {
+                        pane.enableSplitView(with: [tab.id, newTabID])
+                    }
                 }
             } else {
                 // Ajouter à la vue fractionnée existante
