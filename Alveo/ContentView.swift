@@ -399,59 +399,56 @@ struct ContentView: View {
 
     // MARK: - Body
     var body: some View {
-        VStack(spacing: 0) {
-            // Barre d'outils principale
-            GeometryReader { geometry in
-                HStack {
-                    Spacer()
-                    
-                    if let activeHelper = currentActiveWebViewHelper {
-                        PrincipalToolbarView(
+        GeometryReader { geometry in
+            NavigationStack {
+                HStack(spacing: 0) {
+                    // SIDEBAR à gauche
+                    if let activePane = currentActiveAlveoPaneObject,
+                       let activeHelper = currentActiveWebViewHelper {
+                        SidebarView(
+                            pane: activePane,
                             webViewHelper: activeHelper,
-                            urlInput: $toolbarURLInput,
-                            showSuggestions: $showToolbarSuggestions,
-                            filteredHistory: $filteredToolbarHistory,
-                            isFocused: $isToolbarAddressBarFocused,
-                            geometryProxy: geometry,
-                            fetchHistoryAction: fetchToolbarHistorySuggestions
+                            globalIsolationManager: globalIsolationManager
                         )
+                        .frame(minWidth: 200, maxWidth: 300)
+                    } else {
+                        Text("Aucun espace actif")
+                            .frame(minWidth: 200, maxWidth: 300)
+                            .background(Color(NSColor.controlBackgroundColor))
                     }
                     
-                    Spacer()
+                    Divider()
+                    
+                    // CONTENU PRINCIPAL à droite
+                    VStack(spacing: 0) {
+                        // WebView
+                        if let activePane = currentActiveAlveoPaneObject {
+                            ActiveAlveoPaneContainerView(
+                                pane: activePane,
+                                tabWebViewHelpers: tabWebViewHelpers,
+                                globalURLInput: $toolbarURLInput
+                            )
+                        } else {
+                            noActivePanesView
+                        }
+                    }
                 }
-                .padding(.vertical, 8)
-                .background(Color(NSColor.windowBackgroundColor))
             }
-            .frame(height: 48)
-            
-            Divider()
-            
-            // Contenu principal avec sidebar et vue principale
-            HStack(spacing: 0) {
-                // SIDEBAR à gauche
-                if let activePane = currentActiveAlveoPaneObject,
-                   let activeHelper = currentActiveWebViewHelper {
-                    SidebarView(
-                        pane: activePane,
-                        webViewHelper: activeHelper,
-                        globalIsolationManager: globalIsolationManager
-                    )
-                    .frame(minWidth: 200, maxWidth: 300)
-                }
-                
-                Divider()
-                
-                // CONTENU PRINCIPAL à droite
-                VStack(spacing: 0) {
-                    // WebView
-                    if let activePane = currentActiveAlveoPaneObject {
-                        ActiveAlveoPaneContainerView(
-                            pane: activePane,
-                            tabWebViewHelpers: tabWebViewHelpers,
-                            globalURLInput: $toolbarURLInput
-                        )
-                    } else {
-                        noActivePanesView
+            .toolbar {
+                if let helperForToolbar = currentActiveWebViewHelper {
+                    mainToolbarContent(geometry: geometry, using: helperForToolbar)
+                } else {
+                    // Toolbar minimale si aucun helper actif
+                    ToolbarItemGroup(placement: .principal) {
+                        Text("Alveo")
+                    }
+                    ToolbarItemGroup(placement: .primaryAction) {
+                        Button {
+                            createNewTabAction()
+                        } label: {
+                            Image(systemName: "plus.circle")
+                        }
+                        .disabled(currentActiveAlveoPaneObject == nil)
                     }
                 }
             }
