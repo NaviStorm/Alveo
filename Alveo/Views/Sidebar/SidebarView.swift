@@ -1,4 +1,3 @@
-Alveo/Views/Sidebar/SidebarView.swift
 import SwiftUI
 import SwiftData
 
