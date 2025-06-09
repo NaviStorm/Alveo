@@ -22,21 +22,410 @@ class WebViewHelper: ObservableObject, Identifiable { // Ajout de Identifiable
     private var canGoBackObservation: NSKeyValueObservation?
     private var canGoForwardObservation: NSKeyValueObservation?
     
-    init(customUserAgent: String? = nil) {
+    init(customUserAgent: String? = nil, isolationLevel: DataIsolationManager.IsolationLevel = .strict) {
         let configuration = WKWebViewConfiguration()
-        configuration.preferences.javaScriptEnabled = true
-        // configuration.preferences.javaScriptCanOpenWindowsAutomatically = true // Décommentez si nécessaire
         
+        // ✅ Configuration selon le niveau choisi
+        switch isolationLevel {
+        case .none:
+            configuration.websiteDataStore = WKWebsiteDataStore.default()
+            // Pas de script de sécurité supplémentaire
+            
+        case .moderate:
+            configuration.websiteDataStore = WKWebsiteDataStore.nonPersistent()
+            Self.setupModerateIsolationSecurity(for: configuration)
+            
+        case .strict:
+            configuration.websiteDataStore = WKWebsiteDataStore.nonPersistent()
+            Self.setupStrictIsolationSecurity(for: configuration)
+            
+        case .extreme:
+            configuration.websiteDataStore = WKWebsiteDataStore.nonPersistent()
+            Self.setupExtremeIsolationSecurity(for: configuration)
+        }
+        
+        // ✅ Correction de l'avertissement - Utiliser la nouvelle API
+        let webpagePreferences = WKWebpagePreferences()
+        webpagePreferences.allowsContentJavaScript = true
+        configuration.defaultWebpagePreferences = webpagePreferences
+        
+        // ✅ Maintenant on peut créer la WebView
         self.webView = WKWebView(frame: .zero, configuration: configuration)
         
         if let agent = customUserAgent {
             self.webView.customUserAgent = agent
         }
         
-        print(">>> [WebViewHelper INIT] Créé helper ID: \(self.id), WKWebView ID: \(Unmanaged.passUnretained(self.webView).toOpaque())")
+        print(">>> [WebViewHelper INIT] Créé helper ID: \(self.id) avec isolation \(isolationLevel)")
+        
         setupKeyValueObservations()
     }
     
+    // Ajouter après setupExtremeIsolationSecurity
+    private static func setupModerateIsolationSecurity(for configuration: WKWebViewConfiguration) {
+        let moderateIsolationScript = """
+        (function() {
+            // Bloquer seulement les cookies cross-origin, pas tous
+            const originalCookieDescriptor = Object.getOwnPropertyDescriptor(Document.prototype, 'cookie') ||
+                                           Object.getOwnPropertyDescriptor(HTMLDocument.prototype, 'cookie');
+            
+            Object.defineProperty(document, 'cookie', {
+                get: function() {
+                    return originalCookieDescriptor.get.call(this);
+                },
+                set: function(value) {
+                    // Permettre les cookies same-origin
+                    if (window.location.hostname === document.domain) {
+                        return originalCookieDescriptor.set.call(this, value);
+                    }
+                    console.warn('Cookie cross-origin bloqué:', value);
+                    return;
+                }
+            });
+            
+            // Bloquer seulement les iframes cross-origin
+            const originalCreateElement = document.createElement;
+            document.createElement = function(tagName) {
+                const element = originalCreateElement.call(this, tagName);
+                
+                if (tagName.toLowerCase() === 'iframe') {
+                    const originalSetAttribute = element.setAttribute;
+                    element.setAttribute = function(name, value) {
+                        if (name.toLowerCase() === 'src') {
+                            try {
+                                const iframeURL = new URL(value, window.location.href);
+                                const currentOrigin = window.location.origin;
+                                
+                                if (iframeURL.origin !== currentOrigin) {
+                                    console.warn('Iframe cross-origin bloqué:', value);
+                                    return;
+                                }
+                            } catch (e) {
+                                console.warn('URL iframe invalide:', value);
+                                return;
+                            }
+                        }
+                        return originalSetAttribute.call(this, name, value);
+                    };
+                }
+                
+                return element;
+            };
+            
+            console.log('🔒 Isolation modérée activée');
+        })();
+        """
+        
+        let isolationScript = WKUserScript(
+            source: moderateIsolationScript,
+            injectionTime: .atDocumentStart,
+            forMainFrameOnly: false
+        )
+        configuration.userContentController.addUserScript(isolationScript)
+    }
+
+    private static func setupStrictIsolationSecurity(for configuration: WKWebViewConfiguration) {
+        let strictIsolationScript = """
+        (function() {
+            // Bloquer les cookies cross-origin et limiter localStorage/sessionStorage
+            const originalCookieDescriptor = Object.getOwnPropertyDescriptor(Document.prototype, 'cookie') ||
+                                           Object.getOwnPropertyDescriptor(HTMLDocument.prototype, 'cookie');
+            
+            Object.defineProperty(document, 'cookie', {
+                get: function() {
+                    return originalCookieDescriptor.get.call(this);
+                },
+                set: function(value) {
+                    if (window.location.hostname === document.domain) {
+                        return originalCookieDescriptor.set.call(this, value);
+                    }
+                    console.warn('Cookie cross-origin bloqué (strict):', value);
+                    return;
+                }
+            });
+            
+            // Limiter localStorage (mais ne pas le bloquer complètement)
+            const originalLocalStorage = window.localStorage;
+            Object.defineProperty(window, 'localStorage', {
+                get: function() {
+                    const currentOrigin = window.location.origin;
+                    if (currentOrigin !== document.location.origin) {
+                        console.warn('Accès localStorage cross-origin bloqué (strict)');
+                        return {
+                            getItem: () => null,
+                            setItem: () => {},
+                            removeItem: () => {},
+                            clear: () => {},
+                            key: () => null,
+                            length: 0
+                        };
+                    }
+                    return originalLocalStorage;
+                }
+            });
+            
+            // Bloquer tous les iframes
+            const originalCreateElement = document.createElement;
+            document.createElement = function(tagName) {
+                const element = originalCreateElement.call(this, tagName);
+                
+                if (tagName.toLowerCase() === 'iframe') {
+                    console.warn('Iframe bloqué (strict)');
+                    return document.createElement('div');
+                }
+                
+                return element;
+            };
+            
+            console.log('🔒 Isolation stricte activée');
+        })();
+        """
+        
+        let isolationScript = WKUserScript(
+            source: strictIsolationScript,
+            injectionTime: .atDocumentStart,
+            forMainFrameOnly: false
+        )
+        configuration.userContentController.addUserScript(isolationScript)
+    }
+
+    // ✅ Méthode statique pour éviter l'utilisation de self
+    private static func setupExtremeIsolationSecurity(for configuration: WKWebViewConfiguration) {
+        let extremeIsolationScript = """
+        (function() {
+            // Bloquer complètement l'accès aux cookies
+            Object.defineProperty(document, 'cookie', {
+                get: function() { return ''; },
+                set: function(value) { 
+                    console.warn('Cookie bloqué par isolation extrême:', value);
+                    return;
+                }
+            });
+            
+            // Bloquer localStorage
+            Object.defineProperty(window, 'localStorage', {
+                get: function() {
+                    console.warn('localStorage bloqué par isolation extrême');
+                    return {
+                        getItem: () => null,
+                        setItem: () => {},
+                        removeItem: () => {},
+                        clear: () => {},
+                        key: () => null,
+                        length: 0
+                    };
+                }
+            });
+            
+            // Bloquer sessionStorage
+            Object.defineProperty(window, 'sessionStorage', {
+                get: function() {
+                    console.warn('sessionStorage bloqué par isolation extrême');
+                    return {
+                        getItem: () => null,
+                        setItem: () => {},
+                        removeItem: () => {},
+                        clear: () => {},
+                        key: () => null,
+                        length: 0
+                    };
+                }
+            });
+            
+            // Bloquer IndexedDB
+            Object.defineProperty(window, 'indexedDB', {
+                get: function() {
+                    console.warn('IndexedDB bloqué par isolation extrême');
+                    return null;
+                }
+            });
+            
+            // Bloquer WebSQL (si supporté)
+            if (window.openDatabase) {
+                window.openDatabase = function() {
+                    console.warn('WebSQL bloqué par isolation extrême');
+                    return null;
+                };
+            }
+            
+            // Bloquer les iframes complètement
+            const originalCreateElement = document.createElement;
+            document.createElement = function(tagName) {
+                const element = originalCreateElement.call(this, tagName);
+                
+                if (tagName.toLowerCase() === 'iframe') {
+                    console.warn('Iframe bloqué par isolation extrême');
+                    return document.createElement('div');
+                }
+                
+                return element;
+            };
+            
+            // Bloquer les workers
+            if (window.Worker) {
+                window.Worker = function() {
+                    console.warn('Web Worker bloqué par isolation extrême');
+                    throw new Error('Web Workers désactivés pour l\\'isolation');
+                };
+            }
+            
+            if (window.SharedWorker) {
+                window.SharedWorker = function() {
+                    console.warn('Shared Worker bloqué par isolation extrême');
+                    throw new Error('Shared Workers désactivés pour l\\'isolation');
+                };
+            }
+            
+            // Bloquer les Service Workers
+            if ('serviceWorker' in navigator) {
+                Object.defineProperty(navigator, 'serviceWorker', {
+                    get: function() {
+                        console.warn('Service Worker bloqué par isolation extrême');
+                        return undefined;
+                    }
+                });
+            }
+            
+            console.log('🔒 Isolation extrême activée - Toutes les données sont isolées');
+        })();
+        """
+        
+        let isolationScript = WKUserScript(
+            source: extremeIsolationScript,
+            injectionTime: .atDocumentStart,
+            forMainFrameOnly: false
+        )
+        configuration.userContentController.addUserScript(isolationScript)
+    }
+
+    private func setupSecurityConfiguration(for configuration: WKWebViewConfiguration) {
+        // Bloquer l'accès cross-origin aux cookies
+        let cookieIsolationScript = """
+        (function() {
+            // Intercepter les tentatives d'accès aux cookies cross-origin
+            const originalCookieDescriptor = Object.getOwnPropertyDescriptor(Document.prototype, 'cookie') ||
+                                           Object.getOwnPropertyDescriptor(HTMLDocument.prototype, 'cookie');
+            
+            Object.defineProperty(document, 'cookie', {
+                get: function() {
+                    return originalCookieDescriptor.get.call(this);
+                },
+                set: function(value) {
+                    // Vérifier l'origine
+                    const currentOrigin = window.location.origin;
+                    const documentOrigin = document.location.origin;
+                    
+                    if (currentOrigin !== documentOrigin) {
+                        console.warn('Tentative de définition de cookie cross-origin bloquée:', value);
+                        return;
+                    }
+                    
+                    return originalCookieDescriptor.set.call(this, value);
+                }
+            });
+            
+            // Bloquer l'accès au localStorage cross-origin
+            const originalLocalStorage = window.localStorage;
+            Object.defineProperty(window, 'localStorage', {
+                get: function() {
+                    const currentOrigin = window.location.origin;
+                    if (currentOrigin !== document.location.origin) {
+                        console.warn('Accès localStorage cross-origin bloqué');
+                        return {};
+                    }
+                    return originalLocalStorage;
+                }
+            });
+            
+            // Bloquer l'accès au sessionStorage cross-origin
+            const originalSessionStorage = window.sessionStorage;
+            Object.defineProperty(window, 'sessionStorage', {
+                get: function() {
+                    const currentOrigin = window.location.origin;
+                    if (currentOrigin !== document.location.origin) {
+                        console.warn('Accès sessionStorage cross-origin bloqué');
+                        return {};
+                    }
+                    return originalSessionStorage;
+                }
+            });
+        })();
+        """
+        
+        let securityScript = WKUserScript(
+            source: cookieIsolationScript,
+            injectionTime: .atDocumentStart,
+            forMainFrameOnly: false
+        )
+        configuration.userContentController.addUserScript(securityScript)
+        
+        // ✅ Bloquer les iframes cross-origin
+        let iframeBlockingScript = """
+        (function() {
+            const originalCreateElement = document.createElement;
+            document.createElement = function(tagName) {
+                const element = originalCreateElement.call(this, tagName);
+                
+                if (tagName.toLowerCase() === 'iframe') {
+                    const originalSetAttribute = element.setAttribute;
+                    element.setAttribute = function(name, value) {
+                        if (name.toLowerCase() === 'src') {
+                            try {
+                                const iframeURL = new URL(value, window.location.href);
+                                const currentOrigin = window.location.origin;
+                                
+                                if (iframeURL.origin !== currentOrigin) {
+                                    console.warn('Iframe cross-origin bloqué:', value);
+                                    return;
+                                }
+                            } catch (e) {
+                                console.warn('URL iframe invalide:', value);
+                                return;
+                            }
+                        }
+                        return originalSetAttribute.call(this, name, value);
+                    };
+                }
+                
+                return element;
+            };
+        })();
+        """
+        
+        let iframeScript = WKUserScript(
+            source: iframeBlockingScript,
+            injectionTime: .atDocumentStart,
+            forMainFrameOnly: true
+        )
+        configuration.userContentController.addUserScript(iframeScript)
+    }
+    
+    private func addContentSecurityPolicy(to configuration: WKWebViewConfiguration) {
+        let cspScript = """
+        (function() {
+            // Ajouter une CSP stricte
+            const meta = document.createElement('meta');
+            meta.httpEquiv = 'Content-Security-Policy';
+            meta.content = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-src 'none'; object-src 'none';";
+            
+            if (document.head) {
+                document.head.appendChild(meta);
+            } else {
+                document.addEventListener('DOMContentLoaded', function() {
+                    document.head.appendChild(meta);
+                });
+            }
+        })();
+        """
+        
+        let cspUserScript = WKUserScript(
+            source: cspScript,
+            injectionTime: .atDocumentStart,
+            forMainFrameOnly: true
+        )
+        configuration.userContentController.addUserScript(cspUserScript)
+    }
+
     private func setupKeyValueObservations() {
         urlObservation = webView.observe(\.url, options: [.new, .initial]) { [weak self] webViewInstance, _ in
             guard let self = self else { return }
