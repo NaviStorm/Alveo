@@ -1,6 +1,7 @@
 // Alveo/ContentView.swift
 import SwiftUI
 import SwiftData
+import WebKit
 
 @MainActor
 struct ContentView: View {
@@ -22,6 +23,8 @@ struct ContentView: View {
     @State private var newAlveoPaneName: String = ""
     @State private var initialAlveoPaneURLString: String = "https://www.google.com"
     @State private var tabHistory: [UUID] = []
+    
+    @StateObject private var globalIsolationManager = DataIsolationManager()
 
     // MARK: - Computed Properties
     var currentActiveAlveoPaneObject: AlveoPane? {
@@ -96,18 +99,23 @@ struct ContentView: View {
     // MARK: - Helper Management
     private func createAndStoreWebViewHelper(forTabID tabID: UUID, paneID: UUID) -> WebViewHelper {
         if let existingHelper = tabWebViewHelpers[tabID] {
-            print("[ContentView createAndStore] Helper existant pour TabID \(tabID): \(existingHelper.id)")
             return existingHelper
         }
 
-        print("[ContentView createAndStore] Création nouveau helper pour TabID \(tabID) dans PaneID \(paneID)")
-        let newHelper = WebViewHelper(customUserAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.4 Safari/605.1.15")
+        // ✅ Utiliser le niveau d'isolation configuré
+        let newHelper = WebViewHelper(
+            customUserAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.4 Safari/605.1.15",
+            isolationLevel: globalIsolationManager.isolationLevel // ← Utiliser le niveau configuré
+        )
+        
         newHelper.onNavigationEvent = { newURL, newTitle in
             self.handleNavigationEvent(forPaneID: paneID, forTabID: tabID, newURL: newURL, newTitle: newTitle)
         }
+        
         tabWebViewHelpers[tabID] = newHelper
         return newHelper
     }
+    
 
     private func ensureWebViewHelperExists(forTabID tabID: UUID, paneID: UUID) -> WebViewHelper {
         if let existingHelper = tabWebViewHelpers[tabID] {
@@ -391,216 +399,203 @@ struct ContentView: View {
 
     // MARK: - Body
     var body: some View {
-        GeometryReader { geometry in
-            NavigationStack { // Ou NavigationSplitView si vous préférez cette structure
-                HSplitView {
-                    // Volet Sidebar
-                    if let activePaneForSidebar = currentActiveAlveoPaneObject {
-                        // Le helper passé à SidebarView est celui de l'onglet actif du pane,
-                        // mais SidebarView n'utilise peut-être pas directement ce helper,
-                        // sauf pour des infos générales. Pour l'instant, on passe le helper de l'onglet actif.
-                        // Si SidebarView a besoin d'un helper spécifique (ex: pour prévisualisation), il faudra ajuster.
-                        // Actuellement, SidebarView prend un webViewHelper, qui n'est pas beaucoup utilisé.
-                        // On peut passer le currentActiveWebViewHelper s'il existe.
-                        let sidebarHelper = currentActiveWebViewHelper ?? WebViewHelper() // Fallback sur un helper vide si pas d'onglet actif
-
-                        SidebarView(pane: activePaneForSidebar, webViewHelper: sidebarHelper)
-                            .frame(minWidth: 180, idealWidth: 240, maxWidth: 400)
-                    } else {
-                        Text("Aucun espace sélectionné.")
-                            .frame(minWidth: 180, idealWidth: 240, maxWidth: 400)
-                            .background(Color(NSColor.controlBackgroundColor))
-                    }
-
-                    // Volet Contenu Principal
-                    Group {
-                        if let activePaneForContent = currentActiveAlveoPaneObject {
-                            // ActiveAlveoPaneContainerView a besoin de tous les helpers pour les onglets de ce pane
-                            // (pour la SplitView) et du helper de l'onglet actif (pour la vue unique).
-                            // On lui passe tout le dictionnaire tabWebViewHelpers.
-                             ActiveAlveoPaneContainerView(
-                                pane: activePaneForContent,
-                                tabWebViewHelpers: tabWebViewHelpers, // Passe tous les helpers
-                                globalURLInput: $toolbarURLInput
-                            )
-                        } else {
-                            noActivePanesView // S'il n'y a aucun pane du tout
-                        }
-                    }
-                    .frame(minWidth: 300, idealWidth: 700, maxWidth: .infinity) // Ajustez selon vos besoins
-                }
-            }
-            .toolbar {
-                if let helperForToolbar = currentActiveWebViewHelper {
-                    mainToolbarContent(geometry: geometry, using: helperForToolbar)
-                } else {
-                    // Toolbar minimale si aucun helper actif (ex: aucun onglet)
-                    ToolbarItemGroup(placement: .principal) { Text("Alveo") }
-                    ToolbarItemGroup(placement: .primaryAction) {
-                        Button { createNewTabAction() } label: { Image(systemName: "plus.circle") }
-                           .disabled(currentActiveAlveoPaneObject == nil) // Désactivé si aucun pane actif
-                    }
-                }
-            }
-            .onAppear {
-                print("[CV .onAppear] alveoPanes.count: \(alveoPanes.count)")
-                createDefaultPaneIfNeeded() // Assure qu'au moins un pane existe et est actif
-                // La sélection du pane et de son onglet initial déclenchera les .onChange appropriés
-                // pour charger l'URL et initialiser le helper.
-                // Si on vient de créer le premier pane, activeAlveoPaneID est setté,
-                // .onChange(of: activeAlveoPaneID) va s'exécuter.
-                if let paneID = activeAlveoPaneID, let pane = currentActiveAlveoPaneObject, let tabID = pane.currentTabID {
-                    let _ = ensureWebViewHelperExists(forTabID: tabID, paneID: paneID)
-                    updateToolbarURLInputAndLoadIfNeeded(forPaneID: paneID, forTabID: tabID, forceLoad: true)
-                }
-                
-                DispatchQueue.main.async {
-                    NSApplication.shared.windows.first { $0.isMainWindow }?.title = currentActiveAlveoPaneObject?.currentTab?.displayTitle ?? "Alveo"
-                }
-            }
-            .onChange(of: alveoPanes.count) { oldValue, newValue in
-                print("[CV .onChange(alveoPanes.count)] \(oldValue) -> \(newValue)")
-                let previousActiveID = activeAlveoPaneID // Sauvegarder l'ID actif avant modification
-                
-                if let activeID = activeAlveoPaneID, !alveoPanes.contains(where: { $0.id == activeID }) {
-                    // L'ancien pane actif a été supprimé
-                    activeAlveoPaneID = alveoPanes.first?.id // Sélectionner le premier pane restant (s'il y en a)
-                } else if activeAlveoPaneID == nil && !alveoPanes.isEmpty {
-                    // Aucun pane n'était actif, mais il y en a maintenant
-                    activeAlveoPaneID = alveoPanes.first?.id
-                }
-                
-                // Nettoyage des helpers pour les panes qui n'existent plus (plus robuste que dans le menu de suppression)
-                let existingPaneIDs = Set(alveoPanes.map { $0.id })
-                var helpersToRemove: [UUID] = []
-                for (tabID, helper) in tabWebViewHelpers {
-                    // Trouver à quel pane appartient ce tabID. C'est complexe sans référence inverse Tab -> Pane.ID dans le helper.
-                    // Pour l'instant, on se fie au nettoyage lors de la suppression explicite du pane.
-                    // On peut au moins nettoyer les helpers des onglets qui n'appartiennent plus à *aucun* pane existant.
-                    var tabExistsInAnyPane = false
-                    for pane_ in alveoPanes {
-                        if pane_.tabs.contains(where: { $0.id == tabID }) {
-                            tabExistsInAnyPane = true
-                            break
-                        }
-                    }
-                    if !tabExistsInAnyPane {
-                        helpersToRemove.append(tabID)
-                    }
-                }
-                helpersToRemove.forEach { tabWebViewHelpers.removeValue(forKey: $0) }
-                if !helpersToRemove.isEmpty { print("[CV .onChange(alveoPanes.count)] Nettoyé \(helpersToRemove.count) tabWebViewHelpers orphelins.") }
-
-
-                if previousActiveID != activeAlveoPaneID {
-                    // Le changement de activeAlveoPaneID sera géré par son propre .onChange
-                    // print("[CV .onChange(alveoPanes.count)] activeAlveoPaneID a changé. Laisser son .onChange gérer.")
-                } else if let currentID = activeAlveoPaneID, let currentPane = currentActiveAlveoPaneObject { // Si l'ID actif n'a pas changé mais le contenu des panes (ex: suppression d'un *autre* pane)
-                    // S'assurer que le helper pour l'onglet actif du pane actif existe
-                    if let currentTabID = currentPane.currentTabID {
-                         let _ = ensureWebViewHelperExists(forTabID: currentTabID, paneID: currentID)
-                         updateToolbarURLInputAndLoadIfNeeded(forPaneID: currentID, forTabID: currentTabID, forceLoad: false) // Ne pas forcer le rechargement si pas nécessaire
-                    } else if let firstTab = currentPane.tabsForDisplay.first { // Si le pane actif n'a plus d'onglet sélectionné
-                        currentPane.currentTabID = firstTab.id // Déclenchera .onChange(of: currentTabID)
-                    } else { // Si le pane actif est vide
-                        currentPane.addTab(urlString: "about:blank") // Déclenchera .onChange(of: currentTabID)
-                    }
-                }
-            }
-            .onChange(of: activeAlveoPaneID) { oldValue, newValue in
-                print(">>> [CV .onChange(activeAlveoPaneID)] \(String(describing: oldValue)) -> \(String(describing: newValue))")
-                
-                // Sauvegarder l'état de l'onglet actif du pane précédent
-                if let oldPaneID = oldValue, let oldPane = alveoPanes.first(where: {$0.id == oldPaneID}) {
-                     saveCurrentTabState(forPaneID: oldPaneID, forTabID: oldPane.currentTabID)
-                }
-
-                if let newPaneID = newValue, let newPane = alveoPanes.first(where: { $0.id == newPaneID }) {
-                    if let newCurrentTabID = newPane.currentTabID {
-                        let _ = ensureWebViewHelperExists(forTabID: newCurrentTabID, paneID: newPane.id)
-                        updateToolbarURLInputAndLoadIfNeeded(forPaneID: newPaneID, forTabID: newCurrentTabID, forceLoad: true) // Forcer le chargement pour le nouveau pane/tab
-                    } else if let firstTab = newPane.tabsForDisplay.first { // Si le nouveau pane n'a pas d'onglet sélectionné
-                        newPane.currentTabID = firstTab.id // Ceci va redéclencher .onChange(of: currentActiveAlveoPaneObject?.currentTabID)
-                                                           // qui s'occupera de ensureHelper et updateToolbar
-                    } else { // Si le nouveau pane est vide
-                        newPane.addTab(urlString: "about:blank") // Idem, .onChange(of: currentTabID)
-                    }
-                } else {
-                    toolbarURLInput = "" // Aucun pane actif
-                }
-            }
-            .onChange(of: currentActiveAlveoPaneObject?.currentTabID) { oldValue, newValue in
-                print(">>> [CV .onChange(currentTabID)] Pane '\(currentActiveAlveoPaneObject?.name ?? "N/A")': \(String(describing: oldValue)) -> \(String(describing: newValue))")
-                
-                guard let activePane = currentActiveAlveoPaneObject else { return }
-
-                // Sauvegarder l'état de l'ancien onglet actif (s'il y en avait un dans ce pane)
-                if let oldTabID = oldValue {
-                    saveCurrentTabState(forPaneID: activePane.id, forTabID: oldTabID)
-                }
-
-                if let newTabID = newValue {
-                    // Mettre à jour l'historique des onglets
-                    tabHistory.removeAll { $0 == newTabID }
-                    tabHistory.insert(newTabID, at: 0)
-                    if tabHistory.count > 10 { tabHistory = Array(tabHistory.prefix(10)) }
-                    print("[ContentView] Historique onglets mis à jour. Taille: \(tabHistory.count)")
-
-                    // S'assurer que le helper existe pour le nouvel onglet actif et charger son contenu
-                    let _ = ensureWebViewHelperExists(forTabID: newTabID, paneID: activePane.id)
-                    updateToolbarURLInputAndLoadIfNeeded(forPaneID: activePane.id, forTabID: newTabID, forceLoad: true)
+        VStack(spacing: 0) {
+            // Barre d'outils principale
+            GeometryReader { geometry in
+                HStack {
+                    Spacer()
                     
-                    activePane.tabs.first(where: { $0.id == newTabID })?.lastAccessed = Date()
-
-                } else { // currentTabID est devenu nil
-                    // Cela peut arriver si tous les onglets sont fermés.
-                    // Si le pane a encore des onglets, en sélectionner un. Sinon, en créer un.
-                    if let firstTab = activePane.tabsForDisplay.first {
-                        activePane.currentTabID = firstTab.id // Déclenchera une nouvelle passe de ce .onChange
-                    } else {
-                        activePane.addTab(urlString: "about:blank") // Idem
+                    if let activeHelper = currentActiveWebViewHelper {
+                        PrincipalToolbarView(
+                            webViewHelper: activeHelper,
+                            urlInput: $toolbarURLInput,
+                            showSuggestions: $showToolbarSuggestions,
+                            filteredHistory: $filteredToolbarHistory,
+                            isFocused: $isToolbarAddressBarFocused,
+                            geometryProxy: geometry,
+                            fetchHistoryAction: fetchToolbarHistorySuggestions
+                        )
                     }
+                    
+                    Spacer()
                 }
+                .padding(.vertical, 8)
+                .background(Color(NSColor.windowBackgroundColor))
             }
-            // Observer les changements dans la liste des onglets du pane actif (pour le nettoyage des helpers)
-            .onChange(of: currentActiveAlveoPaneObject?.tabs) { oldTabs, newTabs in
-                guard let pane = currentActiveAlveoPaneObject else { return }
-                let newTabIDsSet = Set((newTabs ?? []).map { $0.id })
-                
-                var helpersCleaned = 0
-                for (tabID, _) in tabWebViewHelpers {
-                    // Vérifier si cet helper appartient à un onglet qui n'est plus dans le pane actif
-                    // ET qui n'est dans aucun autre pane non plus (cas plus complexe à gérer ici proprement)
-                    // Pour l'instant, on nettoie seulement si un onglet du *pane actif* a été supprimé.
-                    if pane.tabs.contains(where: {$0.id == tabID}) { // L'onglet appartient à ce pane
-                        // Si l'onglet n'est plus dans la nouvelle liste de tabs pour ce pane, il a été supprimé de ce pane.
-                        // Mais .onChange(of: tabs) est pour la collection, pas pour la suppression individuelle.
-                        // Ce n'est peut-être pas le bon endroit. Le nettoyage lors de la suppression explicite est mieux.
-                    }
-                }
-                // Mieux: nettoyer les helpers dont les tabID ne sont plus dans AUCUN pane.
-                let allTabsInAllPanes = Set(alveoPanes.flatMap { $0.tabs.map { $0.id } })
-                let orphanedHelperKeys = tabWebViewHelpers.keys.filter { !allTabsInAllPanes.contains($0) }
-                orphanedHelperKeys.forEach { key in
-                    tabWebViewHelpers.removeValue(forKey: key)
-                    helpersCleaned += 1
-                }
-                if helpersCleaned > 0 {
-                    print("[CV .onChange(tabs)] Nettoyé \(helpersCleaned) tabWebViewHelpers pour des onglets globalement supprimés.")
-                }
-            }
-            .sheet(isPresented: $showAddAlveoPaneDialog) {
-                addAlveoPaneDialog()
-            }
-            .onReceive(NotificationCenter.default.publisher(for: .createNewTabFromMenu)) { _ in createNewTabAction() }
-            .onReceive(NotificationCenter.default.publisher(for: .closeTabOrWindowFromMenu)) { _ in closeCurrentTabOrWindowAction() }
-            .onReceive(NotificationCenter.default.publisher(for: .enableSplitViewFromMenu)) { _ in enableSplitViewFromMenu() }
-            .onReceive(NotificationCenter.default.publisher(for: .disableSplitViewFromMenu)) { _ in disableSplitViewFromMenu() }
+            .frame(height: 48)
             
-            // Retrait des boutons invisibles ici, les .keyboardShortcut sur les Button dans le menu suffisent.
+            Divider()
+            
+            // Contenu principal avec sidebar et vue principale
+            HStack(spacing: 0) {
+                // SIDEBAR à gauche
+                if let activePane = currentActiveAlveoPaneObject,
+                   let activeHelper = currentActiveWebViewHelper {
+                    SidebarView(
+                        pane: activePane,
+                        webViewHelper: activeHelper,
+                        globalIsolationManager: globalIsolationManager
+                    )
+                    .frame(minWidth: 200, maxWidth: 300)
+                }
+                
+                Divider()
+                
+                // CONTENU PRINCIPAL à droite
+                VStack(spacing: 0) {
+                    // WebView
+                    if let activePane = currentActiveAlveoPaneObject {
+                        ActiveAlveoPaneContainerView(
+                            pane: activePane,
+                            tabWebViewHelpers: tabWebViewHelpers,
+                            globalURLInput: $toolbarURLInput
+                        )
+                    } else {
+                        noActivePanesView
+                    }
+                }
+            }
+        }
+        .onAppear {
+            createDefaultPaneIfNeeded()
+            if activeAlveoPaneID == nil && !alveoPanes.isEmpty {
+                activeAlveoPaneID = alveoPanes.first?.id
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .createNewTabFromMenu)) { _ in
+            createNewTabAction()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .closeTabOrWindowFromMenu)) { _ in
+            closeCurrentTabOrWindowAction()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .enableSplitViewFromMenu)) { _ in
+            enableSplitViewFromMenu()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .disableSplitViewFromMenu)) { _ in
+            disableSplitViewFromMenu()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .enableSplitViewWithSelection)) { notification in
+            guard let paneID = notification.object as? UUID,
+                  let activePane = alveoPanes.first(where: { $0.id == paneID }),
+                  let tabIDsArray = notification.userInfo?["tabIDs"] as? [UUID] else { return }
+            
+            // ✅ Créer les helpers pour tous les onglets avant d'activer la vue fractionnée
+            for tabID in tabIDsArray {
+                let _ = ensureWebViewHelperExists(forTabID: tabID, paneID: activePane.id)
+            }
+            
+            activePane.enableSplitView(with: tabIDsArray)
+            
+            // Définir le premier comme actif
+            if let firstSelectedTabID = tabIDsArray.first {
+                activePane.currentTabID = firstSelectedTabID
+            }
+            
+            print("[ContentView] Vue fractionnée activée via notification avec \(tabIDsArray.count) onglets")
+        }
+        .onChange(of: activeAlveoPaneID) { oldPaneID, newPaneID in
+            print("[ContentView .onChange(of: activeAlveoPaneID)] Changement de \(String(describing: oldPaneID)) vers \(String(describing: newPaneID))")
+            
+            // Sauvegarder l'état de l'ancien pane
+            if let oldID = oldPaneID, let oldPane = alveoPanes.first(where: { $0.id == oldID }) {
+                saveCurrentTabState(forPaneID: oldID, forTabID: oldPane.currentTabID)
+            }
+            
+            // Charger le nouvel espace actif
+            if let newID = newPaneID {
+                updateToolbarURLInputAndLoadIfNeeded(forPaneID: newID, forTabID: currentActiveAlveoPaneObject?.currentTabID, forceLoad: true)
+            }
+        }
+        .onChange(of: currentActiveAlveoPaneObject?.currentTabID) { oldTabID, newTabID in
+            print("[ContentView .onChange(of: currentTabID)] Changement de \(String(describing: oldTabID)) vers \(String(describing: newTabID))")
+            
+            guard let activePane = currentActiveAlveoPaneObject else { return }
+            
+            // Sauvegarder l'état de l'ancien onglet
+            if let oldID = oldTabID {
+                saveCurrentTabState(forPaneID: activePane.id, forTabID: oldID)
+            }
+            
+            // Mettre à jour l'historique des onglets
+            if let newID = newTabID {
+                tabHistory.removeAll { $0 == newID }
+                tabHistory.insert(newID, at: 0)
+                if tabHistory.count > 10 { tabHistory.removeLast() }
+                
+                // Mettre à jour lastAccessed
+                if let newTab = activePane.tabs.first(where: { $0.id == newID }) {
+                    newTab.lastAccessed = Date()
+                }
+                
+                updateToolbarURLInputAndLoadIfNeeded(forPaneID: activePane.id, forTabID: newID, forceLoad: true)
+            } else {
+                // Aucun onglet sélectionné, ajouter un onglet vide
+                activePane.addTab(urlString: "about:blank")
+            }
+        }
+        .onChange(of: alveoPanes.count) { oldCount, newCount in
+            print("[ContentView .onChange(of: alveoPanes.count)] Changement de \(oldCount) vers \(newCount)")
+            
+            if newCount == 0 {
+                activeAlveoPaneID = nil
+                tabWebViewHelpers.removeAll()
+                toolbarURLInput = ""
+            } else if activeAlveoPaneID == nil || !alveoPanes.contains(where: { $0.id == activeAlveoPaneID }) {
+                activeAlveoPaneID = alveoPanes.first?.id
+            }
+        }
+        .onChange(of: currentActiveAlveoPaneObject?.tabs.count) { oldCount, newCount in
+            print("[ContentView .onChange(of: tabs.count)] Changement de \(String(describing: oldCount)) vers \(String(describing: newCount))")
+            
+            guard let activePane = currentActiveAlveoPaneObject else { return }
+            
+            if newCount == 0 {
+                activePane.currentTabID = nil
+            } else if activePane.currentTabID == nil || !activePane.tabs.contains(where: { $0.id == activePane.currentTabID }) {
+                activePane.currentTabID = activePane.tabs.first?.id
+            }
+            
+            // Nettoyer les helpers orphelins
+            let validTabIDs = Set(activePane.tabs.map { $0.id })
+            for (tabID, _) in tabWebViewHelpers {
+                if !validTabIDs.contains(tabID) {
+                    tabWebViewHelpers.removeValue(forKey: tabID)
+                    print("[ContentView] Helper orphelin supprimé pour TabID: \(tabID)")
+                }
+            }
+        }
+        .sheet(isPresented: $showAddAlveoPaneDialog, onDismiss: resetAddAlveoPaneDialogFields) {
+            VStack(alignment: .leading, spacing: 16) {
+                Text("Créer un nouvel Espace")
+                    .font(.headline)
+                
+                TextField("Nom de l'Espace", text: $newAlveoPaneName)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                
+                TextField("URL de départ", text: $initialAlveoPaneURLString)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                
+                HStack {
+                    Button("Annuler") {
+                        showAddAlveoPaneDialog = false
+                    }
+                    .keyboardShortcut(.escape)
+                    
+                    Spacer()
+                    
+                    Button("Créer") {
+                        let url = URL(string: initialAlveoPaneURLString) ?? URL(string: "about:blank")!
+                        addAlveoPane(name: newAlveoPaneName.isEmpty ? nil : newAlveoPaneName, withURL: url)
+                        showAddAlveoPaneDialog = false
+                    }
+                    .keyboardShortcut(.return)
+                }
+            }
+            .padding()
+            .frame(width: 400)
         }
     }
-
+    
     private func enableSplitViewFromMenu() {
         guard let activePane = currentActiveAlveoPaneObject else { return }
         

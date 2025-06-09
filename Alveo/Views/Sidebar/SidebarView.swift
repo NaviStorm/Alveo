@@ -5,8 +5,11 @@ import SwiftData
 struct SidebarView: View {
     @Bindable var pane: AlveoPane
     @ObservedObject var webViewHelper: WebViewHelper
+    @ObservedObject var globalIsolationManager: DataIsolationManager
     @Environment(\.modelContext) private var modelContext
     
+    @State private var showIsolationSettings = false
+
     @Query(sort: \AlveoPane.creationDate, order: .forward) private var allAlveoPanes: [AlveoPane]
     
     @State private var selectedTabIDs: Set<UUID> = []
@@ -22,6 +25,13 @@ struct SidebarView: View {
                 enableSplitViewWithSelectedTabs()
             }
         }
+        .sheet(isPresented: $showIsolationSettings) {
+            // ✅ Passer le gestionnaire global et le binding
+            DataIsolationSettingsView(
+                isolationManager: globalIsolationManager, // Vous devez passer le gestionnaire global
+                isPresented: $showIsolationSettings
+            )
+        }
     }
     
     @ViewBuilder
@@ -32,6 +42,15 @@ struct SidebarView: View {
                 .lineLimit(1)
                 .padding(.leading, 12)
             Spacer()
+            
+            // ✅ Bouton pour les paramètres d'isolation
+            Button {
+                showIsolationSettings = true
+            } label: {
+                Image(systemName: "shield")
+            }
+            .buttonStyle(.borderless)
+            
             addTabButton
         }
         .frame(height: 38)
