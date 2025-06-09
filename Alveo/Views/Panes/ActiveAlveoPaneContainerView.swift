@@ -21,11 +21,12 @@ struct ActiveAlveoPaneContainerView: View {
     var body: some View {
         let isInSplitView = pane.isSplitViewActive
         // ❌ Supprimer cette condition restrictive
-        // let currentTabIsInSplit = pane.splitViewTabIDs.contains(pane.currentTabID ?? UUID())
+        let currentTabIsInSplit = pane.splitViewTabIDs.contains(pane.currentTabID ?? UUID())
+        
         
         VStack(spacing: 0) {
             // ✅ Simplifier la condition
-            if isInSplitView && !pane.splitViewTabs.isEmpty {
+            if isInSplitView && currentTabIsInSplit {
                 SplitWebView(
                     pane: pane,
                     tabWebViewHelpers: tabWebViewHelpers,
